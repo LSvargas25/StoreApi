@@ -1,0 +1,1 @@
+﻿Scaffold-DbContext "Server=STEVEN\SQLEXPRESS;Database=Store;Integrated Security=True;TrustServerCertificate=True" Microsoft.EntityFrameworkCore.SqlServer -OutputDir Models
