@@ -17,11 +17,12 @@
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
-    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.6.2" />
+    <PackageReference Include="Microsoft.VisualStudio.Web.CodeGeneration.Design" Version="8.0.7" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="8.1.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="8.1.4" />
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Controllers\" />
     <Folder Include="Interface\Audit\" />
     <Folder Include="Interface\CashRegister\" />
     <Folder Include="Interface\Credit\" />
@@ -42,7 +43,6 @@
     <Folder Include="Interface\Supplier\" />
     <Folder Include="Interface\Tax\" />
     <Folder Include="Interface\Transfer\" />
-    <Folder Include="Interface\User\" />
     <Folder Include="Interface\WareHouse\" />
     <Folder Include="Models\" />
     <Folder Include="Services\Log\" />
@@ -66,7 +66,6 @@
     <Folder Include="Services\Tax\" />
     <Folder Include="Services\Transfer\" />
     <Folder Include="Services\WareHouse\" />
-    <Folder Include="Services\User\" />
   </ItemGroup>
 
 </Project>

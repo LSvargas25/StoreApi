@@ -127,9 +127,9 @@ public partial class StoreContext : DbContext
 
     public virtual DbSet<WebhookSubscriber> WebhookSubscribers { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=STEVEN\\SQLEXPRESS;Database=Store;Integrated Security=True;TrustServerCertificate=True");
+
+    
+
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -142,6 +142,18 @@ public partial class StoreContext : DbContext
             entity.Property(e => e.AttributeId).HasColumnName("AttributeID");
             entity.Property(e => e.Name).HasMaxLength(255);
         });
+
+
+        modelBuilder.Entity<Role>(entity =>
+        {
+            entity.HasKey(e => e.RoleId).HasName("PK__Role__8AFACE3AB1A85A84");
+            entity.ToTable("Role", "dbo");  // ✅ specify the dbo schema
+
+            entity.Property(e => e.RoleId).HasColumnName("RoleID");
+            entity.Property(e => e.IsActive).HasDefaultValue(true);
+            entity.Property(e => e.Name).HasMaxLength(100);
+        });
+
 
         modelBuilder.Entity<AttributeDetail>(entity =>
         {
@@ -968,18 +980,7 @@ public partial class StoreContext : DbContext
             entity.Property(e => e.IsActive).HasDefaultValue(true);
             entity.Property(e => e.Name).HasMaxLength(255);
         });
-
-        modelBuilder.Entity<Role>(entity =>
-        {
-            entity.HasKey(e => e.RoleId).HasName("PK__Role__8AFACE3AB1A85A84");
-
-            entity.ToTable("Role");
-
-            entity.Property(e => e.RoleId).HasColumnName("RoleID");
-            entity.Property(e => e.IsActive).HasDefaultValue(true);
-            entity.Property(e => e.Name).HasMaxLength(100);
-        });
-
+ 
         modelBuilder.Entity<Sale>(entity =>
         {
             entity.HasKey(e => e.SaleId).HasName("PK__Sale__1EE3C41F9DDFF3D5");

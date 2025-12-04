@@ -1,34 +1,44 @@
+﻿using Microsoft.EntityFrameworkCore;
 using StoreApi.Models;
-using Microsoft.EntityFrameworkCore;
+using StoreApi.Interface.User;
+using StoreApi.Services.User;
+using Microsoft.OpenApi.Models;
 
-internal class Program
+var builder = WebApplication.CreateBuilder(args);
+
+// Controllers
+builder.Services.AddControllers();
+
+// DbContext
+builder.Services.AddDbContext<StoreContext>(options =>
+    options.UseSqlServer(builder.Configuration.GetConnectionString("StoreDb")));
+
+// Register your service for DI
+builder.Services.AddScoped<IUserRoleService, UserRoleService>();
+
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen(c =>
 {
-    private static void Main(string[] args)
+    c.SwaggerDoc("v1", new OpenApiInfo
     {
-        var builder = WebApplication.CreateBuilder(args);
+        Title = "Store API",
+        Version = "v1"
+    });
+});
 
-        // Add services to the container.
-        builder.Services.AddControllers();
+var app = builder.Build();
 
-        // Register DbContext
-        builder.Services.AddDbContext<StoreContext>(options =>
-            options.UseSqlServer(builder.Configuration.GetConnectionString("StoreDb")));
+// Enable Swagger
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "Store API v1");
+    c.RoutePrefix = string.Empty;  
+});
 
-        builder.Services.AddEndpointsApiExplorer();
-        builder.Services.AddSwaggerGen();
+app.UseHttpsRedirection();
+app.UseAuthorization();
+app.MapControllers();
 
-        var app = builder.Build();
-
-        // Configure middleware
-        if (app.Environment.IsDevelopment())
-        {
-            app.UseSwagger();
-            app.UseSwaggerUI();
-        }
-
-        app.UseHttpsRedirection();
-        app.UseAuthorization();
-        app.MapControllers();
-        app.Run();
-    }
-}
+app.Run();
