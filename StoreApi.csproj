@@ -22,7 +22,51 @@
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+    <Folder Include="Interface\Audit\" />
+    <Folder Include="Interface\CashRegister\" />
+    <Folder Include="Interface\Credit\" />
+    <Folder Include="Interface\Currency\" />
+    <Folder Include="Interface\Customer\" />
+    <Folder Include="Interface\Discount\" />
+    <Folder Include="Interface\Exchange\" />
+    <Folder Include="Interface\Hook\" />
+    <Folder Include="Interface\Inventory\" />
+    <Folder Include="Interface\Invoice\" />
+    <Folder Include="Interface\ItemVariant\" />
+    <Folder Include="Interface\Item\" />
+    <Folder Include="Interface\Log\" />
+    <Folder Include="Interface\OutboxMessage\" />
+    <Folder Include="Interface\Payment\" />
+    <Folder Include="Interface\Purchase\" />
+    <Folder Include="Interface\Sale\" />
+    <Folder Include="Interface\Supplier\" />
+    <Folder Include="Interface\Tax\" />
+    <Folder Include="Interface\Transfer\" />
+    <Folder Include="Interface\User\" />
+    <Folder Include="Interface\WareHouse\" />
     <Folder Include="Models\" />
+    <Folder Include="Services\Log\" />
+    <Folder Include="Services\ItemVariant\" />
+    <Folder Include="Services\Item\" />
+    <Folder Include="Services\Invoice\" />
+    <Folder Include="Services\Inventory\" />
+    <Folder Include="Services\Hook\" />
+    <Folder Include="Services\Exchange\" />
+    <Folder Include="Services\Discount\" />
+    <Folder Include="Services\Customer\" />
+    <Folder Include="Services\Currency\" />
+    <Folder Include="Services\Credit\" />
+    <Folder Include="Services\CashRegister\" />
+    <Folder Include="Services\Audit\" />
+    <Folder Include="Services\OutboxMessage\" />
+    <Folder Include="Services\Payment\" />
+    <Folder Include="Services\Purchase\" />
+    <Folder Include="Services\Sale\" />
+    <Folder Include="Services\Supplier\" />
+    <Folder Include="Services\Tax\" />
+    <Folder Include="Services\Transfer\" />
+    <Folder Include="Services\WareHouse\" />
+    <Folder Include="Services\User\" />
   </ItemGroup>
 
 </Project>
