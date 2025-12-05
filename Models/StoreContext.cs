@@ -1194,7 +1194,8 @@ public partial class StoreContext : DbContext
         {
             entity.HasKey(e => e.UserId).HasName("PK__UserAcco__1788CCACA7B3B4C1");
 
-            entity.ToTable("UserAccount");
+            // Specify the schema explicitly
+            entity.ToTable("UserAccount", "dbo");
 
             entity.HasIndex(e => e.Email, "IX_UserAccount_Email");
 

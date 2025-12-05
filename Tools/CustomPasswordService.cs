@@ -19,5 +19,6 @@ namespace StoreApi.Tools
             var computedHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
             return computedHash.SequenceEqual(passwordHash);
         }
+
     }
 }
