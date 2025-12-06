@@ -4,6 +4,7 @@ using StoreApi.Interface.User;
 using StoreApi.ModelsDTO.User;
 using StoreApi.Tools;
 using System.Data;
+using System.Text.RegularExpressions;
 
 public class UserService : IUserService
 {
@@ -19,20 +20,69 @@ public class UserService : IUserService
         _crypto = crypto;
     }
 
+    // -------------------------------------------------------------
+    // VALIDATION HELPERS
+    // -------------------------------------------------------------
+    private void ValidateRequired(string? value, string field)
+    {
+        if (string.IsNullOrWhiteSpace(value))
+            throw new ArgumentException($"{field} is required.");
+    }
+
+    private void ValidateEmail(string? email)
+    {
+        if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email is required.");
+
+        var regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
+        if (!regex.IsMatch(email))
+            throw new ArgumentException("Email format is invalid.");
+    }
+
+    private void ValidatePhone(string? phone)
+    {
+        if (string.IsNullOrWhiteSpace(phone)) return;
+
+        if (!Regex.IsMatch(phone, @"^[0-9+\- ]+$"))
+            throw new ArgumentException("Phone number contains invalid characters.");
+    }
+
+    private string EncryptIfNeeded(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input)) return input ?? "";
+
+        // Already encrypted → do not encrypt twice
+        if (_crypto.IsDataEncrypted(input))
+            return input;
+
+        return _crypto.Encrypt(input);
+    }
+
+    // -------------------------------------------------------------
+    // CREATE USER
+    // -------------------------------------------------------------
     public async Task<int> CreateAsync(UserAccountCreateDTO dto)
     {
+        // --- Input validation ---
+        ValidateRequired(dto.UserName, "UserName");
+        ValidateEmail(dto.Email);
+        ValidatePhone(dto.PhoneNumber);
+
+        // --- Password hashing ---
         _passwordService.CreatePasswordHash(dto.Password, out byte[] hash, out byte[] salt);
 
         using var conn = new SqlConnection(_connectionString);
         using var cmd = new SqlCommand("Users.sp_User_Create", conn);
-        cmd.CommandType = CommandType.StoredProcedure; 
+        cmd.CommandType = CommandType.StoredProcedure;
 
-        cmd.Parameters.AddWithValue("@UserName", _crypto.Encrypt(dto.UserName));
-        cmd.Parameters.AddWithValue("@Email", _crypto.Encrypt(dto.Email));
+        // --- Encrypt sensitive data ---
+        cmd.Parameters.AddWithValue("@UserName", EncryptIfNeeded(dto.UserName));
+        cmd.Parameters.AddWithValue("@Email", EncryptIfNeeded(dto.Email));
+        cmd.Parameters.AddWithValue("@PhoneNumber", dto.PhoneNumber == null ? DBNull.Value : EncryptIfNeeded(dto.PhoneNumber));
+        cmd.Parameters.AddWithValue("@CardID", dto.CardId == null ? DBNull.Value : EncryptIfNeeded(dto.CardId));
+
+        // --- Other fields ---
         cmd.Parameters.AddWithValue("@PasswordHash", hash);
         cmd.Parameters.AddWithValue("@PasswordSalt", salt);
-        cmd.Parameters.AddWithValue("@PhoneNumber", dto.PhoneNumber == null ? (object)DBNull.Value : _crypto.Encrypt(dto.PhoneNumber));
-        cmd.Parameters.AddWithValue("@CardID", dto.CardId == null ? (object)DBNull.Value : _crypto.Encrypt(dto.CardId));
         cmd.Parameters.AddWithValue("@IsActive", true);
         cmd.Parameters.AddWithValue("@RoleID", dto.RoleId);
         cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
@@ -47,6 +97,9 @@ public class UserService : IUserService
         return (int)output.Value;
     }
 
+    // -------------------------------------------------------------
+    // GET ALL USERS
+    // -------------------------------------------------------------
     public async Task<List<UserAccountDTO>> GetAllAsync(string? search)
     {
         var result = new List<UserAccountDTO>();
@@ -77,6 +130,9 @@ public class UserService : IUserService
         return result;
     }
 
+    // -------------------------------------------------------------
+    // GET BY ID
+    // -------------------------------------------------------------
     public async Task<UserAccountDTO?> GetByIdAsync(int id)
     {
         using var conn = new SqlConnection(_connectionString);
@@ -102,47 +158,52 @@ public class UserService : IUserService
         };
     }
 
+    // -------------------------------------------------------------
+    // UPDATE USER
+    // -------------------------------------------------------------
     public async Task<bool> UpdateAsync(int id, UserUpdateDTO dto)
     {
+        ValidateRequired(dto.UserName, "UserName");
+        ValidateEmail(dto.Email);
+        ValidatePhone(dto.PhoneNumber);
+
         using var conn = new SqlConnection(_connectionString);
-        using var cmd = new SqlCommand("Users.sp_User_Update", conn)
-        {
-            CommandType = CommandType.StoredProcedure
-        };
+        using var cmd = new SqlCommand("Users.sp_User_Update", conn);
+        cmd.CommandType = CommandType.StoredProcedure;
 
-        byte[] passwordHash = null!;
-        byte[] passwordSalt = null!;
+        // --- Encrypt sensitive data ---
+        cmd.Parameters.AddWithValue("@UserName", EncryptIfNeeded(dto.UserName));
+        cmd.Parameters.AddWithValue("@Email", EncryptIfNeeded(dto.Email));
+        cmd.Parameters.AddWithValue("@PhoneNumber", dto.PhoneNumber == null ? DBNull.Value : EncryptIfNeeded(dto.PhoneNumber));
+        cmd.Parameters.AddWithValue("@CardID", dto.CardId == null ? DBNull.Value : EncryptIfNeeded(dto.CardId));
 
+        // --- Password update optional ---
         if (!string.IsNullOrEmpty(dto.Password))
         {
-            var passwordService = new CustomPasswordService();
-            passwordService.CreatePasswordHash(dto.Password, out passwordHash, out passwordSalt);
+            _passwordService.CreatePasswordHash(dto.Password, out byte[] hash, out byte[] salt);
+            cmd.Parameters.AddWithValue("@PasswordHash", hash);
+            cmd.Parameters.AddWithValue("@PasswordSalt", salt);
+        }
+        else
+        {
+            cmd.Parameters.AddWithValue("@PasswordHash", DBNull.Value);
+            cmd.Parameters.AddWithValue("@PasswordSalt", DBNull.Value);
         }
 
-        cmd.Parameters.AddWithValue("@UserID", dto.UserId);
-        cmd.Parameters.AddWithValue("@UserName", dto.UserName ?? (object)DBNull.Value);
-        cmd.Parameters.AddWithValue("@Email", dto.Email ?? (object)DBNull.Value);
-        cmd.Parameters.Add("@PasswordHash", SqlDbType.VarBinary, 512).Value =
-            string.IsNullOrEmpty(dto.Password) ? DBNull.Value : (object)passwordHash;
-        cmd.Parameters.Add("@PasswordSalt", SqlDbType.VarBinary, 128).Value =
-            string.IsNullOrEmpty(dto.Password) ? DBNull.Value : (object)passwordSalt;
-        cmd.Parameters.AddWithValue("@PhoneNumber", (object?)dto.PhoneNumber ?? DBNull.Value);
-        cmd.Parameters.AddWithValue("@CardID", (object?)dto.CardId ?? DBNull.Value);
+        cmd.Parameters.AddWithValue("@UserID", id);
 
-        // Add return value parameter
         var returnParam = cmd.Parameters.Add("@ReturnVal", SqlDbType.Int);
         returnParam.Direction = ParameterDirection.ReturnValue;
 
         await conn.OpenAsync();
         await cmd.ExecuteNonQueryAsync();
 
-        int result = (int)returnParam.Value;
-
-        return result == 1;
+        return (int)returnParam.Value == 1;
     }
 
-
-
+    // -------------------------------------------------------------
+    // DELETE USER
+    // -------------------------------------------------------------
     public async Task<bool> DeleteAsync(int id)
     {
         using var conn = new SqlConnection(_connectionString);
@@ -152,65 +213,53 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("@UserID", id);
 
         await conn.OpenAsync();
+        var rows = await cmd.ExecuteScalarAsync();
 
-        // Execute and check rows affected
-        var rowsAffected = await cmd.ExecuteScalarAsync();  
-        return (int)(rowsAffected ?? 0) > 0;
+        return (int)(rows ?? 0) > 0;
     }
 
- 
-
-    public Task<UserLoginResponseDTO> LoginAsync(UserLoginRequestDTO dto)
-    {
-        throw new NotImplementedException();
-    }
-
+    // -------------------------------------------------------------
+    // CHANGE STATUS
+    // -------------------------------------------------------------
     public async Task<bool> ChangeStatus(int id, UserActiveDTO dto)
     {
         using var conn = new SqlConnection(_connectionString);
-        using var cmd = new SqlCommand("Users.sp_User_ChangeStatus", conn)
-        {
-            CommandType = CommandType.StoredProcedure
-        };
+        using var cmd = new SqlCommand("Users.sp_User_ChangeStatus", conn);
+        cmd.CommandType = CommandType.StoredProcedure;
 
-        cmd.Parameters.AddWithValue("@UserId", dto.UserId);
+        cmd.Parameters.AddWithValue("@UserId", id);
         cmd.Parameters.AddWithValue("@IsActive", dto.IsActive);
 
-        // Capture the RETURN value from SQL
-        var returnParameter = cmd.Parameters.Add("@ReturnVal", SqlDbType.Int);
-        returnParameter.Direction = ParameterDirection.ReturnValue;
+        var returnParam = cmd.Parameters.Add("@ReturnVal", SqlDbType.Int);
+        returnParam.Direction = ParameterDirection.ReturnValue;
 
         await conn.OpenAsync();
         await cmd.ExecuteNonQueryAsync();
 
-        int result = (int)returnParameter.Value;
-
-        return result == 1;
+        return (int)returnParam.Value == 1;
     }
 
+    // -------------------------------------------------------------
+    // CHANGE ROLE
+    // -------------------------------------------------------------
     public async Task<bool> ChangeRole(int id, UserRoleDTO dto)
     {
-        using var conn = new SqlConnection(_connectionString);
-        using var cmd = new SqlCommand("Users.sp_User_ChangeRole", conn)
-        {
-            CommandType = CommandType.StoredProcedure
-        };
+        if (dto.RoleId < 1 || dto.RoleId > 12)
+            throw new ArgumentException("RoleId is invalid.");
 
-        cmd.Parameters.AddWithValue("@UserId", dto.UserId);
+        using var conn = new SqlConnection(_connectionString);
+        using var cmd = new SqlCommand("Users.sp_User_ChangeRole", conn);
+        cmd.CommandType = CommandType.StoredProcedure;
+
+        cmd.Parameters.AddWithValue("@UserId", id);
         cmd.Parameters.AddWithValue("@RoleId", dto.RoleId);
 
-        var returnParameter = cmd.Parameters.Add("@ReturnVal", SqlDbType.Int);
-        returnParameter.Direction = ParameterDirection.ReturnValue;
+        var returnParam = cmd.Parameters.Add("@ReturnVal", SqlDbType.Int);
+        returnParam.Direction = ParameterDirection.ReturnValue;
 
         await conn.OpenAsync();
         await cmd.ExecuteNonQueryAsync();
 
-        int result = (int)returnParameter.Value;
-
-        return result == 1;
+        return (int)returnParam.Value == 1;
     }
-
-
-
 }
-

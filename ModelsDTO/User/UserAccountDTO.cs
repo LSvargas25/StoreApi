@@ -42,4 +42,18 @@
         public int UserId { get; set; }
         public int RoleId { get; set; }
     }
+
+    public class UserLoginResponseDTO
+    {
+        public string Token { get; set; }
+        public UserAccountDTO User { get; set; }
+        public DateTime ExpiresAt { get; set; }
+    }
+
+    public class UserLoginRequestDTO
+    {
+        public string Email { get; set; }
+        public string Password { get; set; }
+    }
+
 }

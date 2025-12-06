@@ -12,6 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.22" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.10" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.17">
       <PrivateAssets>all</PrivateAssets>
@@ -23,7 +24,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Folder Include="Interface\Audit\" />
     <Folder Include="Interface\CashRegister\" />
     <Folder Include="Interface\Credit\" />
     <Folder Include="Interface\Currency\" />
@@ -40,11 +40,30 @@
     <Folder Include="Interface\Payment\" />
     <Folder Include="Interface\Purchase\" />
     <Folder Include="Interface\Sale\" />
-    <Folder Include="Interface\Supplier\" />
     <Folder Include="Interface\Tax\" />
     <Folder Include="Interface\Transfer\" />
     <Folder Include="Interface\WareHouse\" />
     <Folder Include="Models\" />
+    <Folder Include="Repositorys\CashRegister\" />
+    <Folder Include="Repositorys\Credit\" />
+    <Folder Include="Repositorys\Currency\" />
+    <Folder Include="Repositorys\Customer\" />
+    <Folder Include="Repositorys\Discount\" />
+    <Folder Include="Repositorys\Exchange\" />
+    <Folder Include="Repositorys\Hook\" />
+    <Folder Include="Repositorys\Inventory\" />
+    <Folder Include="Repositorys\Invoice\" />
+    <Folder Include="Repositorys\ItemVariant\" />
+    <Folder Include="Repositorys\Item\" />
+    <Folder Include="Repositorys\Log\" />
+    <Folder Include="Repositorys\OutboxMessage\" />
+    <Folder Include="Repositorys\Payment\" />
+    <Folder Include="Repositorys\Purchase\" />
+    <Folder Include="Repositorys\Sale\" />
+    <Folder Include="Repositorys\Supplier\" />
+    <Folder Include="Repositorys\Tax\" />
+    <Folder Include="Repositorys\Transfer\" />
+    <Folder Include="Repositorys\WareHouse\" />
     <Folder Include="Services\Log\" />
     <Folder Include="Services\ItemVariant\" />
     <Folder Include="Services\Item\" />
@@ -57,12 +76,10 @@
     <Folder Include="Services\Currency\" />
     <Folder Include="Services\Credit\" />
     <Folder Include="Services\CashRegister\" />
-    <Folder Include="Services\Audit\" />
     <Folder Include="Services\OutboxMessage\" />
     <Folder Include="Services\Payment\" />
     <Folder Include="Services\Purchase\" />
     <Folder Include="Services\Sale\" />
-    <Folder Include="Services\Supplier\" />
     <Folder Include="Services\Tax\" />
     <Folder Include="Services\Transfer\" />
     <Folder Include="Services\WareHouse\" />
