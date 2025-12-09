@@ -1,11 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StoreApi.Models;
+﻿using Microsoft.AspNetCore.Mvc;
+using StoreApi.Interface.Supplier;
+using StoreApi.ModelsDTO.Supplier;
+using Swashbuckle.AspNetCore.Annotations;
 
 namespace StoreApi.Controllers
 {
@@ -13,95 +9,124 @@ namespace StoreApi.Controllers
     [ApiController]
     public class SuppliersController : ControllerBase
     {
-        private readonly StoreContext _context;
+        private readonly ISupplierService _supplierService;
 
-        public SuppliersController(StoreContext context)
+        public SuppliersController(ISupplierService supplierService)
         {
-            _context = context;
+            _supplierService = supplierService;
         }
 
-        // GET: api/Suppliers
+        // GET: api/Suppliers?search=xxx
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Supplier>>> GetSuppliers()
+        [SwaggerOperation(Summary = "Get all suppliers")]
+        public async Task<ActionResult<List<SupplierDTO>>> GetSuppliers([FromQuery] string? search)
         {
-            return await _context.Suppliers.ToListAsync();
+            var list = await _supplierService.GetAllAsync(search);
+            return Ok(list);
         }
 
         // GET: api/Suppliers/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Supplier>> GetSupplier(int id)
+        [SwaggerOperation(Summary = "Get supplier by ID")]
+        public async Task<ActionResult<SupplierDTO>> GetSupplier(int id)
         {
-            var supplier = await _context.Suppliers.FindAsync(id);
-
+            var supplier = await _supplierService.GetByIdAsync(id);
             if (supplier == null)
-            {
-                return NotFound();
-            }
+                return NotFound(new { message = $"Supplier with ID {id} not found." });
 
-            return supplier;
-        }
-
-        // PUT: api/Suppliers/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutSupplier(int id, Supplier supplier)
-        {
-            if (id != supplier.SupplierId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(supplier).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!SupplierExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            return Ok(supplier);
         }
 
         // POST: api/Suppliers
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Supplier>> PostSupplier(Supplier supplier)
+        [SwaggerOperation(Summary = "Create a new supplier")]
+        public async Task<IActionResult> CreateSupplier([FromBody] CreateSupplier dto)
         {
-            _context.Suppliers.Add(supplier);
-            await _context.SaveChangesAsync();
+            if (!ModelState.IsValid)
+                return BadRequest(new { message = "Validation Error", errors = ModelState });
 
-            return CreatedAtAction("GetSupplier", new { id = supplier.SupplierId }, supplier);
+            try
+            {
+                var id = await _supplierService.CreateAsync(dto);
+                dto.SupplierId = id;
+                return Ok(new { message = "Supplier created successfully.", data = dto });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // PUT: api/Suppliers/5
+        [HttpPut("{id}")]
+        [SwaggerOperation(Summary = "Update supplier")]
+        public async Task<IActionResult> UpdateSupplier(int id, [FromBody] SupplierUpdate dto)
+        {
+            if (!ModelState.IsValid)
+                return BadRequest(new { message = "Validation Error", errors = ModelState });
+
+            try
+            {
+                var updated = await _supplierService.UpdateAsync(id, dto);
+                if (!updated)
+                    return NotFound(new { message = $"Supplier with ID {id} not found." });
+
+                return Ok(new { message = "Supplier updated successfully." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
 
         // DELETE: api/Suppliers/5
         [HttpDelete("{id}")]
+        [SwaggerOperation(Summary = "Delete supplier")]
         public async Task<IActionResult> DeleteSupplier(int id)
         {
-            var supplier = await _context.Suppliers.FindAsync(id);
-            if (supplier == null)
-            {
-                return NotFound();
-            }
+            var deleted = await _supplierService.DeleteAsync(id);
+            if (!deleted)
+                return NotFound(new { message = $"Supplier with ID {id} not found." });
 
-            _context.Suppliers.Remove(supplier);
-            await _context.SaveChangesAsync();
-
-            return NoContent();
+            return Ok(new { message = "Supplier deleted successfully." });
         }
 
-        private bool SupplierExists(int id)
+        // PATCH: api/Suppliers/ChangeStatus/5
+        [HttpPatch("ChangeStatus/{id}")]
+        [SwaggerOperation(Summary = "Change supplier status")]
+        public async Task<IActionResult> ChangeStatus(int id, [FromBody] SupplierStatus dto)
         {
-            return _context.Suppliers.Any(e => e.SupplierId == id);
+            try
+            {
+                var updated = await _supplierService.ChangeStatus(id, dto);
+                if (!updated)
+                    return NotFound(new { message = $"Supplier with ID {id} not found." });
+
+                return Ok(new { message = "Supplier status updated successfully." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
+        }
+
+        // PATCH: api/Suppliers/ChangeRole/5
+        [HttpPatch("ChangeRole/{id}")]
+        [SwaggerOperation(Summary = "Change supplier role/type")]
+        public async Task<IActionResult> ChangeRole(int id, [FromBody] SupplierRole dto)
+        {
+            try
+            {
+                var updated = await _supplierService.ChangeRole(id, dto);
+                if (!updated)
+                    return NotFound(new { message = $"Supplier with ID {id} not found." });
+
+                return Ok(new { message = "Supplier type updated successfully." });
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(new { message = ex.Message });
+            }
         }
     }
 }

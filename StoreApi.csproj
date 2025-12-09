@@ -60,7 +60,6 @@
     <Folder Include="Repositorys\Payment\" />
     <Folder Include="Repositorys\Purchase\" />
     <Folder Include="Repositorys\Sale\" />
-    <Folder Include="Repositorys\Supplier\" />
     <Folder Include="Repositorys\Tax\" />
     <Folder Include="Repositorys\Transfer\" />
     <Folder Include="Repositorys\WareHouse\" />

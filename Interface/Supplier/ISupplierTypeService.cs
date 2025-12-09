@@ -4,14 +4,12 @@ namespace StoreApi.Interface.Supplier
 {
     public interface ISupplierTypeService
     {
-
-        // crate a  role Supplier .
+        //Create supplier type
         Task<int> CreateAsync(SupplierTypeDTO dto);
         
-        // Gets all  types at bd.
-        Task<List<SupplierDTO>> GetAllAsync(string? search);
-      
-        // Delete a  supplier by  ID.
+        //Det all the suppliertype
+        Task<List<SupplierTypeDTO>> GetAllAsync(string? search, int page, int limit);
+        //Delete supplier 
         Task<bool> DeleteAsync(int id);
     }
 }

@@ -6,7 +6,7 @@ namespace StoreApi.Interface.Supplier
     {
 
         // crate a  Supplier .
-        Task<int> CreateAsync(SupplierDTO dto);
+        Task<int> CreateAsync(CreateSupplier dto);
         // Update a  supplier by  ID.
         Task<bool> UpdateAsync(int id, SupplierUpdate dto);
         // Gets all  suppliers at bd.

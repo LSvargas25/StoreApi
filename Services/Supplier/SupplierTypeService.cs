@@ -7,7 +7,7 @@ using System.Data;
 
 namespace StoreApi.Services.Supplier
 {
-    public class SupplierTypeService:SupplierTypeDTO
+    public class SupplierTypeService:ISupplierTypeService
     {
         private readonly string _connectionString;
        
@@ -48,7 +48,7 @@ namespace StoreApi.Services.Supplier
         public async Task<int> CreateAsync(SupplierTypeDTO dto)
         {
             using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("[Supplier].[sp_SupplierTypeCreate]", conn);
+            using var cmd = new SqlCommand("[Supplier].[sp_SupplierType_Create]", conn);
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
             cmd.Parameters.AddWithValue("@Name", dto.Name);
@@ -70,7 +70,7 @@ namespace StoreApi.Services.Supplier
         public async Task<bool> DeleteAsync(int id)
         {
             using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("[Supplier].[sp_SupplierTypeDelete]", conn);
+            using var cmd = new SqlCommand("[Supplier].[sp_SupplierType_Delete]", conn);
             cmd.CommandType = CommandType.StoredProcedure;
 
             cmd.Parameters.AddWithValue("@SupplierTypeID", id);

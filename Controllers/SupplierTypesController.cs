@@ -18,46 +18,44 @@ namespace StoreApi.Controllers
     [ApiController]
     public class SupplierTypesController : ControllerBase
     {
-        private readonly ISupplierService _supplierService;
+        private readonly ISupplierTypeService _supplierService;
 
-        public SupplierTypesController(ISupplierService supplierService)
+        public SupplierTypesController(ISupplierTypeService supplierService)
         {
             _supplierService = supplierService;
         }
+
         //Gell all the Supplier types
         [HttpGet]
-        [SwaggerOperation(Summary = "Get all the supplier type on the bd ")]
-        public async Task<ActionResult<List<SupplierDTO>>> Get([FromQuery] string? search)
+        [SwaggerOperation(Summary = "Get all Supplier types.")]
+    
+        public async Task<ActionResult<List<SupplierTypeDTO>>> Get([FromQuery] string? search, int page = 1, int limit = 10)
         {
-            var users = await _supplierService.GetAllAsync(search);
-            return Ok(users);
+            var types = await _supplierService.GetAllAsync(search, page, limit);
+            return Ok(types);
         }
-
-        //Create a new Supplier type
+        //Create the suppliertype
         [HttpPost]
-        [SwaggerOperation(Summary = "Register a new  Supplier tyoe")]
-        public async Task<IActionResult> Create([FromBody] SupplierDTO dto)
+        [SwaggerOperation(Summary = "Create a Supplier type.")]
+        public async Task<IActionResult> Create([FromBody] SupplierTypeDTO dto)
         {
             var id = await _supplierService.CreateAsync(dto);
-
-            dto.SupplierId = id;
-
+            dto.SupplierTypeId = id;
             return Ok(dto);
         }
-
-        //Delete  a supplier type
+        //Delete supplier 
         [HttpDelete("{id}")]
-        [SwaggerOperation(Summary = "Delete SupplierType")]
+        [SwaggerOperation(Summary = "Delete a Supplier type.")]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _supplierService.DeleteAsync(id);
-            if (!deleted) return NotFound();
+            if (!deleted) return NotFound(new { message = "Supplier type not found" });
 
-            // Return 200 with a simple message
-            return Ok(new { message = "Role deleted successfully", SupplierId = id });
+            return Ok(new { message = "Supplier type deleted successfully", id });
         }
-
-
-
     }
+
+
+
 }
+

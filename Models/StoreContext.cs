@@ -1055,8 +1055,8 @@ public partial class StoreContext : DbContext
         modelBuilder.Entity<SupplierType>(entity =>
         {
             entity.HasKey(e => e.SupplierTypeId).HasName("PK__Supplier__27DA8AF3E46E60B2");
-
-            entity.ToTable("SupplierType");
+            entity.ToTable("SupplierType", "dbo");   
+             
 
             entity.Property(e => e.SupplierTypeId).HasColumnName("SupplierTypeID");
             entity.Property(e => e.Name).HasMaxLength(100);

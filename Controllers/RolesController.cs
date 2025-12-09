@@ -27,7 +27,7 @@ namespace StoreApi.Controllers
 
         //Get Userole by ID
         [HttpGet("{id}")]
-        [SwaggerOperation(Summary = "Get all the UserRole by ID ")]
+        [SwaggerOperation(Summary = "Get UserRole by ID ")]
         public async Task<IActionResult> Get(int id)
         {
             var role = await _roleService.GetByIdAsync(id);
