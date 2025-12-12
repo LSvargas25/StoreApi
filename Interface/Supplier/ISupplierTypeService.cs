@@ -7,10 +7,13 @@ namespace StoreApi.Interface.Supplier
         //Create supplier type
         Task<int> CreateAsync(SupplierTypeDTO dto);
         
-        //Det all the suppliertype
+        //Get all the suppliertype
         Task<List<SupplierTypeDTO>> GetAllAsync(string? search, int page, int limit);
         //Delete supplier 
         Task<bool> DeleteAsync(int id);
+        //update type 
+        Task<bool> UpdateAsync(int id,SupplierTypeDTO dto);
+
     }
 }
 

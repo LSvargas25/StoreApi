@@ -53,6 +53,22 @@ namespace StoreApi.Controllers
 
             return Ok(new { message = "Supplier type deleted successfully", id });
         }
+        //Update an Supplier type
+        [HttpPut("{id}")]
+        [SwaggerOperation(Summary = "Update an Supplier type.")]
+        public async Task<IActionResult> Update(int id, [FromBody] SupplierTypeDTO dto)
+        {
+            if (id != dto.SupplierTypeId)
+                return BadRequest(new { message = "Supplier type ID in URL does not match ID in body." });
+
+            var updated = await _supplierService.UpdateAsync(id, dto);
+
+            if (!updated)
+                return NotFound(new { message = $"Supplier type type with ID {id} not found." });
+
+            return Ok(new { message = "Supplier type updated successfully." });
+        }
+
     }
 
 

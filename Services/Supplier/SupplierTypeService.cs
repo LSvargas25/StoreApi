@@ -81,9 +81,22 @@ namespace StoreApi.Services.Supplier
             return (int)(rows ?? 0) > 0;
         }
 
+        public async Task<bool> UpdateAsync(int id, SupplierTypeDTO dto)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("[Supplier].[sp_SupplierType_Update]", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
 
+            cmd.Parameters.AddWithValue("@SupplierTypeID", id);
+            cmd.Parameters.AddWithValue("@Name", dto.Name);
 
+            await conn.OpenAsync();
 
+             
+            var result = await cmd.ExecuteScalarAsync();
+
+            return (int)(result ?? 0) > 0;
+        }
 
 
     }

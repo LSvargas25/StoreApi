@@ -4,7 +4,12 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using StoreApi.Interface.Audit;
+using StoreApi.Interface.Customer;
+using StoreApi.Interface.Invoice;
+using StoreApi.Interface.Item;
+using StoreApi.Interface.Purchase;
 using StoreApi.Interface.Supplier;
+using StoreApi.Interface.Tax;
 using StoreApi.Interface.User; 
 using StoreApi.Models;
 using StoreApi.Repository.Supplier;
@@ -12,7 +17,12 @@ using StoreApi.Repositorys.Supplier;
 using StoreApi.Repositorys.User;
 using StoreApi.Services.Audit;
 using StoreApi.Services.Auth;
+using StoreApi.Services.Customer;
+using StoreApi.Services.Invoice;
+using StoreApi.Services.Item;
+using StoreApi.Services.Purchase;
 using StoreApi.Services.Supplier;
+using StoreApi.Services.Tax;
 using StoreApi.Services.User;
 using StoreApi.Tools;
 using System.Text;
@@ -62,10 +72,18 @@ builder.Services.AddScoped<IAuditService, AuditService>();
 builder.Services.AddScoped<ISupplierTypeService, SupplierTypeService>();
 builder.Services.AddScoped<ISupplierRepository, SupplierRepository>();
 builder.Services.AddScoped<ISupplierService, SupplierService>();
+builder.Services.AddScoped<ICustomerRoleService, CustomerRoleService>();
+builder.Services.AddScoped<IPurchaseTypeService,PurchaseTypeService>();
+builder.Services.AddScoped<IItemCategoryService,ItemCategoryService>();
+builder.Services.AddScoped<ITaxService, TaxService>();
+builder.Services.AddScoped<IInvoiceTypeService, InvoiceTypeService>();
 
 
 
-builder.Services.AddSingleton(new AesCrypto("YourSecretKeyHere")); // Cambiar por llave real
+
+
+
+builder.Services.AddSingleton(new AesCrypto("YourSecretKeyHere"));  
 
 // -----------------------------------------------------------------------------
 // 4. JWT AUTHENTICATION
