@@ -16,6 +16,7 @@ namespace StoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Tags("Supplier")]
     public class SupplierTypesController : ControllerBase
     {
         private readonly ISupplierTypeService _supplierService;

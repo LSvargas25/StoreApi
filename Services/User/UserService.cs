@@ -75,8 +75,8 @@ public class UserService : IUserService
         cmd.CommandType = CommandType.StoredProcedure;
 
         // --- Encrypt sensitive data ---
-        cmd.Parameters.AddWithValue("@UserName", EncryptIfNeeded(dto.UserName));
-        cmd.Parameters.AddWithValue("@Email", EncryptIfNeeded(dto.Email));
+        cmd.Parameters.AddWithValue("@UserName", dto.UserName);
+        cmd.Parameters.AddWithValue("@Email", dto.Email);
         cmd.Parameters.AddWithValue("@PhoneNumber", dto.PhoneNumber == null ? DBNull.Value : EncryptIfNeeded(dto.PhoneNumber));
         cmd.Parameters.AddWithValue("@CardID", dto.CardId == null ? DBNull.Value : EncryptIfNeeded(dto.CardId));
 

@@ -15,7 +15,8 @@ public partial class Warehouse
 
     public bool IsActive { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateOnly CreatedAt { get; set; }
+     
 
     public virtual ICollection<CashRegister> CashRegisters { get; set; } = new List<CashRegister>();
 

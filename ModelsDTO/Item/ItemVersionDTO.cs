@@ -15,4 +15,10 @@
         public int? CreatedByUserId { get; set; }
 
     }
+    public class ItemVersionCreateDTO
+    {
+        public int ItemId { get; set; }
+        public string DataSnapshot { get; set; } = null!;
+        public int? CreatedByUserId { get; set; }
+    }
 }

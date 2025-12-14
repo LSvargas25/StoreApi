@@ -37,7 +37,6 @@
     <Folder Include="Interface\Payment\" />
     <Folder Include="Interface\Sale\" />
     <Folder Include="Interface\Transfer\" />
-    <Folder Include="Interface\WareHouse\" />
     <Folder Include="Models\" />
     <Folder Include="Repositorys\CashRegister\" />
     <Folder Include="Repositorys\Credit\" />
@@ -57,7 +56,6 @@
     <Folder Include="Repositorys\Sale\" />
     <Folder Include="Repositorys\Tax\" />
     <Folder Include="Repositorys\Transfer\" />
-    <Folder Include="Repositorys\WareHouse\" />
     <Folder Include="Services\Log\" />
     <Folder Include="Services\ItemVariant\" />
     <Folder Include="Services\Inventory\" />
@@ -71,7 +69,6 @@
     <Folder Include="Services\Payment\" />
     <Folder Include="Services\Sale\" />
     <Folder Include="Services\Transfer\" />
-    <Folder Include="Services\WareHouse\" />
   </ItemGroup>
 
 </Project>

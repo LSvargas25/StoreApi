@@ -8,6 +8,7 @@ namespace StoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Tags("Invoice")]
     public class InvoiceTypesController : ControllerBase
     {
         private readonly IInvoiceTypeService _invoiceTypeService;

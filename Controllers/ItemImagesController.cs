@@ -7,6 +7,7 @@ namespace StoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Tags("Item")]
     public class ItemImagesController : ControllerBase
     {
         private readonly IItemImageService _itemImageService;

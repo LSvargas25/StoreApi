@@ -10,11 +10,13 @@ using StoreApi.Interface.Item;
 using StoreApi.Interface.Purchase;
 using StoreApi.Interface.Supplier;
 using StoreApi.Interface.Tax;
-using StoreApi.Interface.User; 
+using StoreApi.Interface.User;
+using StoreApi.Interface.WareHouse;
 using StoreApi.Models;
 using StoreApi.Repository.Supplier;
 using StoreApi.Repositorys.Supplier;
 using StoreApi.Repositorys.User;
+using StoreApi.Repositorys.WareHouse;
 using StoreApi.Services.Audit;
 using StoreApi.Services.Auth;
 using StoreApi.Services.Customer;
@@ -24,7 +26,9 @@ using StoreApi.Services.Purchase;
 using StoreApi.Services.Supplier;
 using StoreApi.Services.Tax;
 using StoreApi.Services.User;
+using StoreApi.Services.WareHouse;
 using StoreApi.Tools;
+using Swashbuckle.AspNetCore.SwaggerGen;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -77,19 +81,29 @@ builder.Services.AddScoped<IPurchaseTypeService,PurchaseTypeService>();
 builder.Services.AddScoped<IItemCategoryService,ItemCategoryService>();
 builder.Services.AddScoped<ITaxService, TaxService>();
 builder.Services.AddScoped<IInvoiceTypeService, InvoiceTypeService>();
+builder.Services.AddScoped<IWareHouseRepository, WareHouseRepository>();
+builder.Services.AddScoped<IWareHouseService, WareHouseService>();
 
 
 
 
 
 
-builder.Services.AddSingleton(new AesCrypto("YourSecretKeyHere"));  
+builder.Services.AddSingleton(new AesCrypto("YourSecretKeyHere"));
 
 // -----------------------------------------------------------------------------
 // 4. JWT AUTHENTICATION
 // -----------------------------------------------------------------------------
+// -----------------------------------------------------------------------------
+// 4. JWT AUTHENTICATION
+// -----------------------------------------------------------------------------
 var jwt = builder.Configuration.GetSection("Jwt");
-var secretKey = Encoding.UTF8.GetBytes(jwt["Key"]!);
+var secret = jwt["Secret"];
+
+if (string.IsNullOrWhiteSpace(secret))
+    throw new InvalidOperationException("JWT Secret is not configured");
+
+var secretKey = Encoding.UTF8.GetBytes(secret);
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
@@ -103,9 +117,12 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
             ValidIssuer = jwt["Issuer"],
             ValidAudience = jwt["Audience"],
-            IssuerSigningKey = new SymmetricSecurityKey(secretKey)
+            IssuerSigningKey = new SymmetricSecurityKey(secretKey),
+
+            ClockSkew = TimeSpan.Zero
         };
     });
+
 
 // -----------------------------------------------------------------------------
 // 5. CORS
@@ -126,6 +143,13 @@ builder.Services.AddCors(options =>
 // -----------------------------------------------------------------------------
 builder.Services.AddSwaggerGen(c =>
 {
+    c.EnableAnnotations();
+
+   
+
+
+
+
     c.SwaggerDoc("v1", new OpenApiInfo
     {
         Title = "Store API",
@@ -165,7 +189,7 @@ app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "Store API v1");
-    c.RoutePrefix = string.Empty;
+  
 });
 
 // 8. MIDDLEWARES PERSONALIZADOS

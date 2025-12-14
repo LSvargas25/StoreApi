@@ -7,6 +7,7 @@ namespace StoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Tags("Purchase Type")]
     public class PurchaseTypesController : ControllerBase
     {
         private readonly IPurchaseTypeService _purchaseTypeService;

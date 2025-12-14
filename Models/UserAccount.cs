@@ -23,9 +23,9 @@ public partial class UserAccount
 
     public int RoleId { get; set; }
 
-    public DateTime CreatedAt { get; set; }
+    public DateTime? CreatedAt { get; set; }
 
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
 
     public virtual ICollection<AuditTrail> AuditTrails { get; set; } = new List<AuditTrail>();
 

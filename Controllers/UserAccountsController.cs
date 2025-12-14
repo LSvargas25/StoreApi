@@ -5,6 +5,8 @@ using Swashbuckle.AspNetCore.Annotations;
 
 [Route("api/[controller]")]
 [ApiController]
+[Tags("User")]
+
 public class UserAccountsController : ControllerBase
 {
     private readonly IUserService _userService;

@@ -8,6 +8,7 @@ namespace StoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Tags("Customer")]
     public class CustomerRolesController : ControllerBase
     {
         private readonly ICustomerRoleService _customerRoleService;

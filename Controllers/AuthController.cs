@@ -4,6 +4,7 @@ using StoreApi.ModelsDTO.User;
 
 [ApiController]
 [Route("api/[controller]")]
+[Tags("Login")]
 public class AuthController : ControllerBase
 {
     private readonly IAuthService _authService;

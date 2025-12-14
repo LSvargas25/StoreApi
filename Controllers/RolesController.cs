@@ -8,6 +8,7 @@ namespace StoreApi.Controllers
 {
     [ApiController]
     [Route("api/[controller]")]
+    [Tags("User")]
     public class RolesController : ControllerBase
     {
         private readonly IUserRoleService _roleService;

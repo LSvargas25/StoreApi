@@ -28,83 +28,110 @@ namespace StoreApi.Services.Auth
 
         public async Task<UserLoginResponseDTO?> LoginAsync(UserLoginRequestDTO request)
         {
-            // 1) Basic validation
-            if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            if (string.IsNullOrWhiteSpace(request.Email) ||
+                string.IsNullOrWhiteSpace(request.Password))
                 return null;
 
             var user = await _userRepo.GetByEmailAsync(request.Email);
             if (user == null)
             {
-                // log failed login attempt (no user)
-                await _audit.InsertLogAsync(null, "LOGIN_FAIL", "UserAccount", null, $"Login failed: email '{request.Email}' not found");
+                await _audit.InsertLogAsync(
+                    null,
+                    "LOGIN_FAIL",
+                    "UserAccount",
+                    null,
+                    "Login failed: invalid credentials"
+                );
                 return null;
             }
 
             if (!user.IsActive)
             {
-                await _audit.InsertLogAsync(user.UserId, "LOGIN_FAIL", "UserAccount", user.UserId, "Login failed: account inactive");
+                await _audit.InsertLogAsync(
+                    user.UserId,
+                    "LOGIN_FAIL",
+                    "UserAccount",
+                    user.UserId,
+                    "Login failed: account inactive"
+                );
                 return null;
             }
 
-            // Verify password with the provided salt/hash
-            var isValid = _passwordService.VerifyPasswordHash(request.Password, user.PasswordHash, user.PasswordSalt);
-            if (!isValid)
+            if (!_passwordService.VerifyPasswordHash(
+                request.Password,
+                user.PasswordHash,
+                user.PasswordSalt))
             {
-                await _audit.InsertLogAsync(user.UserId, "LOGIN_FAIL", "UserAccount", user.UserId, "Login failed: invalid password");
+                await _audit.InsertLogAsync(
+                    user.UserId,
+                    "LOGIN_FAIL",
+                    "UserAccount",
+                    user.UserId,
+                    "Login failed: invalid credentials"
+                );
                 return null;
             }
 
-            // Generate JWT
-            var token = GenerateJwtToken(user);
+            var jwt = GenerateJwtToken(user);
 
-            // Insert successful login log
-            await _audit.InsertLogAsync(user.UserId, "LOGIN_SUCCESS", "UserAccount", user.UserId, "User logged in successfully.");
-
-            // Map to DTO
-            var userDto = new UserAccountDTO
-            {
-                UserId = user.UserId,
-                UserName = user.UserName,
-                Email = user.Email,
-                PhoneNumber = user.PhoneNumber,
-                CardId = user.CardId,
-                IsActive = user.IsActive,
-                RoleId = user.RoleId,
-                CreatedAt = user.CreatedAt,
-                UpdatedAt = user.UpdatedAt == DateTime.MinValue ? null : (DateTime?)user.UpdatedAt
-            };
+            await _audit.InsertLogAsync(
+                user.UserId,
+                "LOGIN_SUCCESS",
+                "UserAccount",
+                user.UserId,
+                "User logged in successfully"
+            );
 
             return new UserLoginResponseDTO
             {
-                Token = token.Token,
-                User = userDto,
-                ExpiresAt = token.ExpiresAt
+                Token = jwt.Token,
+                ExpiresAt = jwt.ExpiresAt,
+                User = new UserAccountDTO
+                {
+                    UserId = user.UserId,
+                    UserName = user.UserName,
+                    Email = user.Email,
+                    RoleId = user.RoleId,
+                    IsActive = user.IsActive
+                }
             };
         }
 
         private (string Token, DateTime ExpiresAt) GenerateJwtToken(UserAccount user)
         {
             var jwtSection = _configuration.GetSection("Jwt");
-            var issuer = jwtSection.GetValue<string>("Issuer");
-            var audience = jwtSection.GetValue<string>("Audience");
-            var secret = jwtSection.GetValue<string>("Secret");
+
+            var issuer = jwtSection.GetValue<string>("Issuer")
+                ?? throw new InvalidOperationException("Jwt:Issuer is not configured");
+
+            var audience = jwtSection.GetValue<string>("Audience")
+                ?? throw new InvalidOperationException("Jwt:Audience is not configured");
+
+            var secret = jwtSection.GetValue<string>("Secret")
+                ?? throw new InvalidOperationException("Jwt:Secret is not configured");
+
             var expiresMinutes = jwtSection.GetValue<int>("ExpiresMinutes", 60);
+
+            if (secret.Length < 32)
+                throw new InvalidOperationException("JWT Secret must be at least 32 characters");
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(secret));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
             var expires = DateTime.UtcNow.AddMinutes(expiresMinutes);
 
-            // Claims: subject, name, email, role, custom claims as required
             var claims = new List<Claim>
-        {
-            new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-            new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
-            new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-            new Claim(ClaimTypes.Name, user.UserName),
-            new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
-            new Claim(ClaimTypes.Role, user.RoleId.ToString()) // consider mapping role id -> role name
-        };
+    {
+        new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+        new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
+
+        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+        new Claim(ClaimTypes.Name, user.UserName),
+        new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+
+        // Por ahora RoleId (luego lo puedes mapear a nombre)
+        new Claim(ClaimTypes.Role, user.RoleId.ToString())
+    };
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
@@ -115,7 +142,10 @@ namespace StoreApi.Services.Auth
             );
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
             return (tokenString, expires);
         }
+
+
     }
 }
