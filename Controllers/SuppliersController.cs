@@ -17,14 +17,7 @@ namespace StoreApi.Controllers
             _supplierService = supplierService;
         }
 
-        // GET: api/Suppliers?search=xxx
-        [HttpGet]
-        [SwaggerOperation(Summary = "Get all suppliers")]
-        public async Task<ActionResult<List<SupplierDTO>>> GetSuppliers([FromQuery] string? search)
-        {
-            var list = await _supplierService.GetAllAsync(search);
-            return Ok(list);
-        }
+        
 
         // GET: api/Suppliers/5
         [HttpGet("{id}")]
@@ -58,27 +51,21 @@ namespace StoreApi.Controllers
             }
         }
 
-        // PUT: api/Suppliers/5
         [HttpPut("{id}")]
         [SwaggerOperation(Summary = "Update supplier")]
         public async Task<IActionResult> UpdateSupplier(int id, [FromBody] SupplierUpdate dto)
         {
             if (!ModelState.IsValid)
-                return BadRequest(new { message = "Validation Error", errors = ModelState });
+                return BadRequest(ModelState);
 
-            try
-            {
-                var updated = await _supplierService.UpdateAsync(id, dto);
-                if (!updated)
-                    return NotFound(new { message = $"Supplier with ID {id} not found." });
+            var updated = await _supplierService.UpdateAsync(id, dto);
 
-                return Ok(new { message = "Supplier updated successfully." });
-            }
-            catch (ArgumentException ex)
-            {
-                return BadRequest(new { message = ex.Message });
-            }
+            if (!updated)
+                return NotFound(new { message = $"Supplier with ID {id} not found." });
+
+            return Ok(new { message = "Supplier updated successfully." });
         }
+
 
         // DELETE: api/Suppliers/5
         [HttpDelete("{id}")]
@@ -129,5 +116,15 @@ namespace StoreApi.Controllers
                 return BadRequest(new { message = ex.Message });
             }
         }
+        [HttpGet("view")]
+        [SwaggerOperation(Summary = "Get suppliers for listing view")]
+        public async Task<ActionResult<List<SupplierSee>>> GetSuppliersForView([FromQuery] string? search)
+        {
+            var list = await _supplierService.GetAllForViewAsync(search);
+            return Ok(list);
+        }
+
+
+
     }
 }

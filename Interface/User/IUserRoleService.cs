@@ -19,5 +19,7 @@ namespace StoreApi.Interface.User
 
         // Deletes a role by its ID. Returns true if the deletion was successful.
         Task<bool> DeleteAsync(int id);
+        // role for the select to add a new user
+        Task<List<RoleName>> GetRoleNamesAsync();
     }
 }

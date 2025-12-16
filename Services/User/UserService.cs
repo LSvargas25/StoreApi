@@ -12,16 +12,19 @@ public class UserService : IUserService
     private readonly ICustomPasswordService _passwordService;
     private readonly AesCrypto _crypto;
 
-    public UserService(IConfiguration config, ICustomPasswordService passwordService, AesCrypto crypto)
+    public UserService(
+        IConfiguration config,
+        ICustomPasswordService passwordService,
+        AesCrypto crypto)
     {
         _connectionString = config.GetConnectionString("StoreDb")
-            ?? throw new ArgumentNullException("StoreDb", "Connection string is not configured!");
+            ?? throw new ArgumentNullException("StoreDb");
         _passwordService = passwordService;
         _crypto = crypto;
     }
 
     // -------------------------------------------------------------
-    // VALIDATION HELPERS
+    // VALIDATIONS
     // -------------------------------------------------------------
     private void ValidateRequired(string? value, string field)
     {
@@ -31,26 +34,34 @@ public class UserService : IUserService
 
     private void ValidateEmail(string? email)
     {
-        if (string.IsNullOrWhiteSpace(email)) throw new ArgumentException("Email is required.");
+        if (string.IsNullOrWhiteSpace(email))
+            throw new ArgumentException("Email is required.");
 
-        var regex = new Regex(@"^[^@\s]+@[^@\s]+\.[^@\s]+$");
-        if (!regex.IsMatch(email))
-            throw new ArgumentException("Email format is invalid.");
+        if (!Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+            throw new ArgumentException("Invalid email format.");
     }
 
     private void ValidatePhone(string? phone)
     {
         if (string.IsNullOrWhiteSpace(phone)) return;
 
-        if (!Regex.IsMatch(phone, @"^[0-9+\- ]+$"))
-            throw new ArgumentException("Phone number contains invalid characters.");
+        if (!Regex.IsMatch(phone, @"^\d+$"))
+            throw new ArgumentException("Phone number must contain only numbers.");
     }
 
-    private string EncryptIfNeeded(string? input)
+    private void ValidateCardId(string? cardId)
     {
-        if (string.IsNullOrWhiteSpace(input)) return input ?? "";
+        if (string.IsNullOrWhiteSpace(cardId)) return;
 
-        // Already encrypted → do not encrypt twice
+        if (!Regex.IsMatch(cardId, @"^\d+$"))
+            throw new ArgumentException("Card ID must contain only numbers.");
+    }
+
+    private string EncryptCardId(string? input)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+            return input ?? "";
+
         if (_crypto.IsDataEncrypted(input))
             return input;
 
@@ -58,29 +69,33 @@ public class UserService : IUserService
     }
 
     // -------------------------------------------------------------
-    // CREATE USER
+    // CREATE
     // -------------------------------------------------------------
     public async Task<int> CreateAsync(UserAccountCreateDTO dto)
     {
-        // --- Input validation ---
         ValidateRequired(dto.UserName, "UserName");
         ValidateEmail(dto.Email);
         ValidatePhone(dto.PhoneNumber);
+        ValidateCardId(dto.CardId);
 
-        // --- Password hashing ---
-        _passwordService.CreatePasswordHash(dto.Password, out byte[] hash, out byte[] salt);
+        _passwordService.CreatePasswordHash(
+            dto.Password,
+            out byte[] hash,
+            out byte[] salt
+        );
 
         using var conn = new SqlConnection(_connectionString);
         using var cmd = new SqlCommand("Users.sp_User_Create", conn);
         cmd.CommandType = CommandType.StoredProcedure;
 
-        // --- Encrypt sensitive data ---
         cmd.Parameters.AddWithValue("@UserName", dto.UserName);
         cmd.Parameters.AddWithValue("@Email", dto.Email);
-        cmd.Parameters.AddWithValue("@PhoneNumber", dto.PhoneNumber == null ? DBNull.Value : EncryptIfNeeded(dto.PhoneNumber));
-        cmd.Parameters.AddWithValue("@CardID", dto.CardId == null ? DBNull.Value : EncryptIfNeeded(dto.CardId));
+        cmd.Parameters.AddWithValue("@PhoneNumber",
+            dto.PhoneNumber == null ? DBNull.Value : dto.PhoneNumber);
 
-        // --- Other fields ---
+        cmd.Parameters.AddWithValue("@CardID",
+            dto.CardId == null ? DBNull.Value : EncryptCardId(dto.CardId));
+
         cmd.Parameters.AddWithValue("@PasswordHash", hash);
         cmd.Parameters.AddWithValue("@PasswordSalt", salt);
         cmd.Parameters.AddWithValue("@IsActive", true);
@@ -88,7 +103,10 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
         cmd.Parameters.AddWithValue("@UpdatedAt", DBNull.Value);
 
-        var output = new SqlParameter("@NewUserID", SqlDbType.Int) { Direction = ParameterDirection.Output };
+        var output = new SqlParameter("@NewUserID", SqlDbType.Int)
+        {
+            Direction = ParameterDirection.Output
+        };
         cmd.Parameters.Add(output);
 
         await conn.OpenAsync();
@@ -98,15 +116,20 @@ public class UserService : IUserService
     }
 
     // -------------------------------------------------------------
-    // GET ALL USERS
+    // GET ALL
     // -------------------------------------------------------------
     public async Task<List<UserAccountDTO>> GetAllAsync(string? search)
     {
         var result = new List<UserAccountDTO>();
+
         using var conn = new SqlConnection(_connectionString);
-        using var cmd = new SqlCommand("Users.sp_User_GetAll", conn);
-        cmd.CommandType = CommandType.StoredProcedure;
-        cmd.Parameters.AddWithValue("@Search", (object?)search ?? DBNull.Value);
+        using var cmd = new SqlCommand("Users.sp_User_GetAll", conn)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+
+        cmd.Parameters.AddWithValue("@Search",
+            (object?)search ?? DBNull.Value);
 
         await conn.OpenAsync();
         using var reader = await cmd.ExecuteReaderAsync();
@@ -116,14 +139,21 @@ public class UserService : IUserService
             result.Add(new UserAccountDTO
             {
                 UserId = (int)reader["UserID"],
-                UserName = _crypto.SafeDecrypt((string)reader["UserName"]),
-                Email = _crypto.SafeDecrypt((string)reader["Email"]),
-                PhoneNumber = reader["PhoneNumber"] == DBNull.Value ? null : _crypto.SafeDecrypt((string)reader["PhoneNumber"]),
-                CardId = reader["CardID"] == DBNull.Value ? null : _crypto.SafeDecrypt((string)reader["CardID"]),
+                UserName = (string)reader["UserName"],
+                Email = (string)reader["Email"],
+                PhoneNumber = reader["PhoneNumber"] == DBNull.Value
+                    ? null
+                    : (string)reader["PhoneNumber"],
+                CardId = reader["CardID"] == DBNull.Value
+                    ? null
+                    : _crypto.SafeDecrypt((string)reader["CardID"]),
                 IsActive = (bool)reader["IsActive"],
                 RoleId = (int)reader["RoleID"],
+                RoleName = (string)reader["RoleName"],
                 CreatedAt = (DateTime)reader["CreatedAt"],
-                UpdatedAt = reader["UpdatedAt"] == DBNull.Value ? null : (DateTime?)reader["UpdatedAt"]
+                UpdatedAt = reader["UpdatedAt"] == DBNull.Value
+                    ? null
+                    : (DateTime?)reader["UpdatedAt"]
             });
         }
 
@@ -142,55 +172,74 @@ public class UserService : IUserService
 
         await conn.OpenAsync();
         using var reader = await cmd.ExecuteReaderAsync();
-        if (!await reader.ReadAsync()) return null;
+
+        if (!await reader.ReadAsync())
+            return null;
 
         return new UserAccountDTO
         {
             UserId = (int)reader["UserID"],
-            UserName = _crypto.SafeDecrypt((string)reader["UserName"]),
-            Email = _crypto.SafeDecrypt((string)reader["Email"]),
-            PhoneNumber = reader["PhoneNumber"] == DBNull.Value ? null : _crypto.SafeDecrypt((string)reader["PhoneNumber"]),
-            CardId = reader["CardID"] == DBNull.Value ? null : _crypto.SafeDecrypt((string)reader["CardID"]),
+            UserName = (string)reader["UserName"],
+            Email = (string)reader["Email"],
+            PhoneNumber = reader["PhoneNumber"] == DBNull.Value
+                ? null
+                : (string)reader["PhoneNumber"],
+            CardId = reader["CardID"] == DBNull.Value
+                ? null
+                : _crypto.SafeDecrypt((string)reader["CardID"]),
             IsActive = (bool)reader["IsActive"],
             RoleId = (int)reader["RoleID"],
             CreatedAt = (DateTime)reader["CreatedAt"],
-            UpdatedAt = reader["UpdatedAt"] == DBNull.Value ? null : (DateTime?)reader["UpdatedAt"]
+            UpdatedAt = reader["UpdatedAt"] == DBNull.Value
+                ? null
+                : (DateTime?)reader["UpdatedAt"]
         };
     }
 
     // -------------------------------------------------------------
-    // UPDATE USER
+    // UPDATE (PERMITE CAMBIAR ROL)
     // -------------------------------------------------------------
     public async Task<bool> UpdateAsync(int id, UserUpdateDTO dto)
     {
         ValidateRequired(dto.UserName, "UserName");
         ValidateEmail(dto.Email);
         ValidatePhone(dto.PhoneNumber);
+        ValidateCardId(dto.CardId);
+
+        if (dto.RoleId.HasValue && dto.RoleId.Value <= 0)
+            throw new ArgumentException("Invalid RoleId.");
 
         using var conn = new SqlConnection(_connectionString);
         using var cmd = new SqlCommand("Users.sp_User_Update", conn);
         cmd.CommandType = CommandType.StoredProcedure;
 
-        // --- Encrypt sensitive data ---
-        cmd.Parameters.AddWithValue("@UserName", EncryptIfNeeded(dto.UserName));
-        cmd.Parameters.AddWithValue("@Email", EncryptIfNeeded(dto.Email));
-        cmd.Parameters.AddWithValue("@PhoneNumber", dto.PhoneNumber == null ? DBNull.Value : EncryptIfNeeded(dto.PhoneNumber));
-        cmd.Parameters.AddWithValue("@CardID", dto.CardId == null ? DBNull.Value : EncryptIfNeeded(dto.CardId));
+        cmd.Parameters.AddWithValue("@UserID", id);
+        cmd.Parameters.AddWithValue("@UserName", dto.UserName);
+        cmd.Parameters.AddWithValue("@Email", dto.Email);
+        cmd.Parameters.AddWithValue("@PhoneNumber",
+            dto.PhoneNumber == null ? DBNull.Value : dto.PhoneNumber);
 
-        // --- Password update optional ---
-        if (!string.IsNullOrEmpty(dto.Password))
+        cmd.Parameters.AddWithValue("@CardID",
+            dto.CardId == null ? DBNull.Value : EncryptCardId(dto.CardId));
+
+        cmd.Parameters.AddWithValue("@RoleID",
+            dto.RoleId.HasValue ? dto.RoleId.Value : DBNull.Value);
+
+        if (!string.IsNullOrWhiteSpace(dto.Password))
         {
-            _passwordService.CreatePasswordHash(dto.Password, out byte[] hash, out byte[] salt);
-            cmd.Parameters.AddWithValue("@PasswordHash", hash);
-            cmd.Parameters.AddWithValue("@PasswordSalt", salt);
+            _passwordService.CreatePasswordHash(
+                dto.Password,
+                out byte[] hash,
+                out byte[] salt);
+
+            cmd.Parameters.Add("@PasswordHash", SqlDbType.VarBinary).Value = hash;
+            cmd.Parameters.Add("@PasswordSalt", SqlDbType.VarBinary).Value = salt;
         }
         else
         {
-            cmd.Parameters.AddWithValue("@PasswordHash", DBNull.Value);
-            cmd.Parameters.AddWithValue("@PasswordSalt", DBNull.Value);
+            cmd.Parameters.Add("@PasswordHash", SqlDbType.VarBinary).Value = DBNull.Value;
+            cmd.Parameters.Add("@PasswordSalt", SqlDbType.VarBinary).Value = DBNull.Value;
         }
-
-        cmd.Parameters.AddWithValue("@UserID", id);
 
         var returnParam = cmd.Parameters.Add("@ReturnVal", SqlDbType.Int);
         returnParam.Direction = ParameterDirection.ReturnValue;
@@ -202,7 +251,7 @@ public class UserService : IUserService
     }
 
     // -------------------------------------------------------------
-    // DELETE USER
+    // DELETE
     // -------------------------------------------------------------
     public async Task<bool> DeleteAsync(int id)
     {
@@ -244,9 +293,6 @@ public class UserService : IUserService
     // -------------------------------------------------------------
     public async Task<bool> ChangeRole(int id, UserRoleDTO dto)
     {
-        if (dto.RoleId < 1 || dto.RoleId > 12)
-            throw new ArgumentException("RoleId is invalid.");
-
         using var conn = new SqlConnection(_connectionString);
         using var cmd = new SqlCommand("Users.sp_User_ChangeRole", conn);
         cmd.CommandType = CommandType.StoredProcedure;

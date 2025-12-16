@@ -98,6 +98,29 @@ namespace StoreApi.Services.Supplier
             return (int)(result ?? 0) > 0;
         }
 
+        public async Task<List<ModelsDTO.Supplier.RoleName>> GetRoleNamesAsync()
+        {
+            var result = new List<ModelsDTO.Supplier.RoleName>();
 
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("Supplier.sp_Role_GetNames", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new ModelsDTO.Supplier.RoleName
+                {
+                    SupplierTypeId = reader.GetInt32(0),
+                    Name = reader.GetString(1)
+                });
+            }
+
+            return result;
+        }
     }
 }

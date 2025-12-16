@@ -1,7 +1,8 @@
-﻿using StoreApi.Interface.User;
-using Microsoft.Data.SqlClient;
+﻿using Microsoft.Data.SqlClient;
 using Microsoft.Extensions.Configuration;
+using StoreApi.Interface.User;
 using StoreApi.ModelsDTO.User;
+using System.Data;
 
 namespace StoreApi.Services.User
 {
@@ -144,5 +145,29 @@ namespace StoreApi.Services.User
             }
         }
 
+        public async Task<List<RoleName>> GetRoleNamesAsync()
+        {
+            var result = new List<RoleName>();
+
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("Users.sp_Role_GetNames", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            while (await reader.ReadAsync())
+            {
+                result.Add(new RoleName
+                {
+                    RoleId = reader.GetInt32(0),
+                    Name = reader.GetString(1)
+                });
+            }
+
+            return result;
+        }
     }
 }

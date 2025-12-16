@@ -1,4 +1,5 @@
 ﻿using StoreApi.ModelsDTO.Supplier;
+ 
 
 namespace StoreApi.Interface.Supplier
 {
@@ -14,6 +15,7 @@ namespace StoreApi.Interface.Supplier
         //update type 
         Task<bool> UpdateAsync(int id,SupplierTypeDTO dto);
 
+        Task<List<RoleName>> GetRoleNamesAsync();
     }
 }
 

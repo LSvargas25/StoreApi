@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.DotNet.Scaffolding.Shared.Messaging;
 using StoreApi.Interface.User;
 using StoreApi.ModelsDTO.User;
@@ -6,6 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 
 namespace StoreApi.Controllers
 {
+    
     [ApiController]
     [Route("api/[controller]")]
     [Tags("User")]
@@ -24,6 +26,14 @@ namespace StoreApi.Controllers
         {
             var data = await _roleService.GetAllAsync(search, page, limit);
             return Ok(data);
+        }
+        // GET: api/roles/names
+        [HttpGet("names")]
+        [SwaggerOperation(Summary = "Get the Role name by id")]
+        public async Task<IActionResult> GetRoleNames()
+        {
+            var roles = await _roleService.GetRoleNamesAsync();
+            return Ok(roles);
         }
 
         //Get Userole by ID

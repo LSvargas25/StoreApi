@@ -27,6 +27,16 @@ namespace StoreApi.ModelsDTO.Supplier
         public DateOnly? UpdatedAt { get; set; }
 
     }
+
+    public class SupplierSee
+    {
+        public int SupplierId { get; set; }
+        public string Name { get; set; } = null!;
+        public string? PhoneNumber { get; set; }
+        public bool IsActive { get; set; }
+        public string? SupplierTypeName { get; set; }
+    }
+
     public class CreateSupplier
     {
 
@@ -68,6 +78,7 @@ namespace StoreApi.ModelsDTO.Supplier
         [MaxLength(20)]
         [RegularExpression(@"^\d*$", ErrorMessage = "PhoneNumber must contain only digits.")]
         public string? PhoneNumber { get; set; }
+        public int SupplierTypeId { get; set; }
     }
 
     public class SupplierRole
@@ -84,5 +95,12 @@ public class SupplierTypeDTO
 
         public string Name { get; set; } = null!;
     }
+
+    public class RoleName
+    {
+        public int SupplierTypeId { get; set; }
+        public string Name { get; set; } = null!;
+    }
+
 
 }

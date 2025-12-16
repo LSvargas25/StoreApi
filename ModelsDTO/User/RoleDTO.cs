@@ -8,4 +8,11 @@
 
         public bool IsActive { get; set; }
     }
+
+    public class RoleName
+    {
+        public int RoleId { get; set; }
+
+        public string Name { get; set; } = null!;
+    }
 }

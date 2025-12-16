@@ -10,8 +10,8 @@ namespace StoreApi.Interface.Supplier
         // Update a  supplier by  ID.
         Task<bool> UpdateAsync(int id, SupplierUpdate dto);
         // Gets all  suppliers at bd.
-        Task<List<SupplierDTO>> GetAllAsync(string? search);
-        // Gets a  supplier by  ID.
+        Task<List<SupplierSee>> GetAllForViewAsync(string? search);
+
         Task<SupplierDTO?> GetByIdAsync(int id);
         // Delete a  supplier by  ID.
         Task<bool> DeleteAsync(int id);

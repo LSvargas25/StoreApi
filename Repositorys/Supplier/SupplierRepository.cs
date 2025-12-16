@@ -10,13 +10,14 @@ namespace StoreApi.Repository.Supplier
     public class SupplierRepository : ISupplierRepository
     {
         private readonly string _connectionString;
-        private readonly AesCrypto _crypto;
 
-        public SupplierRepository(IConfiguration config, AesCrypto crypto)
+
+        public SupplierRepository(IConfiguration config)
         {
             _connectionString = config.GetConnectionString("StoreDb");
-            _crypto = crypto;
         }
+
+
 
         public async Task<int> CreateAsync(CreateSupplier dto)
         {
@@ -24,9 +25,9 @@ namespace StoreApi.Repository.Supplier
             using var cmd = new SqlCommand("Supplier.sp_Supplier_Create", conn);
             cmd.CommandType = CommandType.StoredProcedure;
 
-            cmd.Parameters.AddWithValue("@Name", _crypto.Encrypt(dto.Name));
-            cmd.Parameters.AddWithValue("@Email", (object?)_crypto.Encrypt(dto.Email ?? "") ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@PhoneNumber", (object?)_crypto.Encrypt(dto.PhoneNumber ?? "") ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Name", dto.Name);
+            cmd.Parameters.AddWithValue("@Email", (object?)dto.Email ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@PhoneNumber", (object?)dto.PhoneNumber ?? DBNull.Value);
             cmd.Parameters.AddWithValue("@SupplierTypeID", dto.SupplierTypeId ?? (object)DBNull.Value);
 
             var output = new SqlParameter("@NewID", SqlDbType.Int)
@@ -41,9 +42,9 @@ namespace StoreApi.Repository.Supplier
             return (int)output.Value;
         }
 
-        public async Task<List<SupplierDTO>> GetAllAsync(string? search)
+        public async Task<List<SupplierSee>> GetAllForViewAsync(string? search)
         {
-            var list = new List<SupplierDTO>();
+            var list = new List<SupplierSee>();
 
             using var conn = new SqlConnection(_connectionString);
             using var cmd = new SqlCommand("Supplier.sp_Supplier_GetAll", conn);
@@ -56,11 +57,27 @@ namespace StoreApi.Repository.Supplier
 
             while (await reader.ReadAsync())
             {
-                list.Add(MapSupplier(reader));
+                list.Add(new SupplierSee
+                {
+                    SupplierId = reader.GetInt32(reader.GetOrdinal("SupplierID")),
+                    Name = reader.GetString(reader.GetOrdinal("Name")),
+
+                    PhoneNumber = reader.IsDBNull(reader.GetOrdinal("PhoneNumber"))
+                        ? null
+                        : reader.GetString(reader.GetOrdinal("PhoneNumber")),
+
+                    IsActive = reader.GetBoolean(reader.GetOrdinal("IsActive")),
+
+                    SupplierTypeName = reader.IsDBNull(reader.GetOrdinal("SupplierTypeName"))
+                        ? null
+                        : reader.GetString(reader.GetOrdinal("SupplierTypeName"))
+                });
             }
+
 
             return list;
         }
+
 
         public async Task<SupplierDTO?> GetByIdAsync(int id)
         {
@@ -82,19 +99,23 @@ namespace StoreApi.Repository.Supplier
         public async Task<bool> UpdateAsync(int id, SupplierUpdate dto)
         {
             using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("Supplier.sp_Supplier_Update", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
+            using var cmd = new SqlCommand("Supplier.sp_Supplier_Update", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
 
             cmd.Parameters.AddWithValue("@SupplierID", id);
-            cmd.Parameters.AddWithValue("@Name", _crypto.Encrypt(dto.Name));
-            cmd.Parameters.AddWithValue("@Email", (object?)_crypto.Encrypt(dto.Email ?? "") ?? DBNull.Value);
-            cmd.Parameters.AddWithValue("@PhoneNumber", (object?)_crypto.Encrypt(dto.PhoneNumber ?? "") ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@Name", dto.Name);
+            cmd.Parameters.AddWithValue("@Email", (object?)dto.Email ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@PhoneNumber", (object?)dto.PhoneNumber ?? DBNull.Value);
+            cmd.Parameters.AddWithValue("@SupplierTypeID", dto.SupplierTypeId);
 
             await conn.OpenAsync();
             var result = await cmd.ExecuteScalarAsync();
 
             return Convert.ToInt32(result ?? 0) > 0;
         }
+
 
         public async Task<bool> DeleteAsync(int id)
         {
@@ -158,20 +179,21 @@ namespace StoreApi.Repository.Supplier
             return new SupplierDTO
             {
                 SupplierId = reader.GetInt32(idxId),
-                Name = _crypto.SafeDecrypt(encName),
-                Email = _crypto.SafeDecrypt(encEmail),
-                PhoneNumber = _crypto.SafeDecrypt(encPhone),
+                Name = reader.GetString(idxName),
+                Email = reader.IsDBNull(idxEmail) ? null : reader.GetString(idxEmail),
+                PhoneNumber = reader.IsDBNull(idxPhone) ? null : reader.GetString(idxPhone),
                 IsActive = reader.GetBoolean(idxIsActive),
                 SupplierTypeId = reader.IsDBNull(idxType) ? null : reader.GetInt32(idxType),
 
                 CreatedAt = reader.IsDBNull(idxCreated)
-                    ? null
-                    : DateOnly.FromDateTime(reader.GetDateTime(idxCreated)),
+         ? null
+         : DateOnly.FromDateTime(reader.GetDateTime(idxCreated)),
 
                 UpdatedAt = reader.IsDBNull(idxUpdated)
-                    ? null
-                    : DateOnly.FromDateTime(reader.GetDateTime(idxUpdated))
+         ? null
+         : DateOnly.FromDateTime(reader.GetDateTime(idxUpdated))
             };
+
         }
 
 

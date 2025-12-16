@@ -34,13 +34,13 @@ namespace StoreApi.Services.Supplier
             ValidateEmail(dto.Email);
             ValidatePhone(dto.PhoneNumber);
 
+            if (dto.SupplierTypeId <= 0)
+                throw new ArgumentException("SupplierTypeId is required.");
+
             return await _repo.UpdateAsync(id, dto);
         }
 
-        public async Task<List<SupplierDTO>> GetAllAsync(string? search)
-        {
-            return await _repo.GetAllAsync(search);
-        }
+
 
         public async Task<SupplierDTO?> GetByIdAsync(int id)
         {
@@ -102,5 +102,11 @@ namespace StoreApi.Services.Supplier
             if (phone.Length < 8 || phone.Length > 20)
                 throw new ArgumentException("Phone number length must be between 8 and 20 digits.");
         }
+
+        public async Task<List<SupplierSee>> GetAllForViewAsync(string? search)
+        {
+            return await _repo.GetAllForViewAsync(search);
+        }
+
     }
 }

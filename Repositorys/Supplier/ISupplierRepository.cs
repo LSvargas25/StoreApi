@@ -6,7 +6,7 @@ namespace StoreApi.Repositorys.Supplier
     {
         Task<int> CreateAsync(CreateSupplier dto);
         Task<bool> UpdateAsync(int id, SupplierUpdate dto);
-        Task<List<SupplierDTO>> GetAllAsync(string? search);
+        Task<List<SupplierSee>> GetAllForViewAsync(string? search);
         Task<SupplierDTO?> GetByIdAsync(int id);
         Task<bool> DeleteAsync(int id);
         Task<bool> ChangeStatusAsync(int id, bool isActive);

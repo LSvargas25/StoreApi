@@ -29,7 +29,7 @@ namespace StoreApi.Controllers
         //Gell all the Supplier types
         [HttpGet]
         [SwaggerOperation(Summary = "Get all Supplier types.")]
-    
+
         public async Task<ActionResult<List<SupplierTypeDTO>>> Get([FromQuery] string? search, int page = 1, int limit = 10)
         {
             var types = await _supplierService.GetAllAsync(search, page, limit);
@@ -70,9 +70,17 @@ namespace StoreApi.Controllers
             return Ok(new { message = "Supplier type updated successfully." });
         }
 
+
+        // GET: api/roles/names
+        [HttpGet("names")]
+        [SwaggerOperation(Summary = "Get the Role name by id")]
+        public async Task<IActionResult> GetRoleNames()
+        {
+            var roles = await _supplierService.GetRoleNamesAsync();
+            return Ok(roles);
+        }
+
+
     }
-
-
-
 }
 
