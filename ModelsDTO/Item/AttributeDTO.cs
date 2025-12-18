@@ -7,4 +7,9 @@
         public string Name { get; set; } = null!;
 
     }
+    public class AttributeCreateDTO
+    {
+        public string Name { get; set; } = null!;
+
+    }
 }

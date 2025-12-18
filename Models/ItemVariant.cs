@@ -42,4 +42,6 @@ public partial class ItemVariant
     public virtual ICollection<TransferDetail> TransferDetails { get; set; } = new List<TransferDetail>();
 
     public virtual ICollection<UnitRelation> UnitRelations { get; set; } = new List<UnitRelation>();
+
+    public ICollection<PriceHistory> PriceHistories { get; set; } = new List<PriceHistory>();
 }

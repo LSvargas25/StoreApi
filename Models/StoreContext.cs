@@ -847,24 +847,48 @@ public partial class StoreContext : DbContext
                 .OnDelete(DeleteBehavior.ClientSetNull)
                 .HasConstraintName("FK_PaymentDetail_Payment");
         });
-
         modelBuilder.Entity<PriceHistory>(entity =>
         {
-            entity.HasKey(e => e.PriceHistoryId).HasName("PK__PriceHis__A927CB2BABC51AED");
+            entity.HasKey(e => e.PriceHistoryId)
+                  .HasName("PK_PriceHistory");
 
-            entity.ToTable("PriceHistory");
+            entity.ToTable("PriceHistory", "Item");
 
-            entity.Property(e => e.PriceHistoryId).HasColumnName("PriceHistoryID");
-            entity.Property(e => e.Cost).HasColumnType("decimal(18, 2)");
-            entity.Property(e => e.Description).HasMaxLength(1000);
-            entity.Property(e => e.ItemId).HasColumnName("ItemID");
-            entity.Property(e => e.SalePrice).HasColumnType("decimal(18, 2)");
+            entity.Property(e => e.PriceHistoryId)
+                  .HasColumnName("PriceHistoryID");
 
-            entity.HasOne(d => d.Item).WithMany(p => p.PriceHistories)
-                .HasForeignKey(d => d.ItemId)
-                .OnDelete(DeleteBehavior.ClientSetNull)
-                .HasConstraintName("FK_PriceHistory_Item");
+            entity.Property(e => e.ItemVariantId)
+                  .HasColumnName("ItemVariantID");
+
+            entity.Property(e => e.CreatedByUserAccountId)
+                  .HasColumnName("CreatedByUserAccountID");
+
+            entity.Property(e => e.CreatedAt)
+                  .HasColumnType("date");
+
+            entity.Property(e => e.Description)
+                  .HasMaxLength(1000);
+
+            entity.Property(e => e.Cost)
+                  .HasColumnType("decimal(18, 2)");
+
+            entity.Property(e => e.SalePrice)
+                  .HasColumnType("decimal(18, 2)");
+ 
+            entity.HasOne(d => d.ItemVariant)
+                  .WithMany(p => p.PriceHistories)
+                  .HasForeignKey(d => d.ItemVariantId)
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .HasConstraintName("FK_PriceHistory_ItemVariant");
+
+             
+            entity.HasOne(d => d.CreatedByUserAccount)
+                  .WithMany(p => p.PriceHistories)
+                  .HasForeignKey(d => d.CreatedByUserAccountId)
+                  .OnDelete(DeleteBehavior.Restrict)
+                  .HasConstraintName("FK_PriceHistory_UserAccount");
         });
+
 
         modelBuilder.Entity<Purchase>(entity =>
         {

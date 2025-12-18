@@ -34,6 +34,7 @@ namespace StoreApi.ModelsDTO.Supplier
         public string Name { get; set; } = null!;
         public string? PhoneNumber { get; set; }
         public bool IsActive { get; set; }
+        public string? Email { get; set; }
         public string? SupplierTypeName { get; set; }
     }
 

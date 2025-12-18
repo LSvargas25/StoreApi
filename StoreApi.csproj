@@ -48,7 +48,6 @@
     <Folder Include="Repositorys\Inventory\" />
     <Folder Include="Repositorys\Invoice\" />
     <Folder Include="Repositorys\ItemVariant\" />
-    <Folder Include="Repositorys\Item\" />
     <Folder Include="Repositorys\Log\" />
     <Folder Include="Repositorys\OutboxMessage\" />
     <Folder Include="Repositorys\Payment\" />

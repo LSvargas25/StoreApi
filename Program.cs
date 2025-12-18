@@ -14,6 +14,7 @@ using StoreApi.Interface.User;
 using StoreApi.Interface.WareHouse;
 using StoreApi.Models;
 using StoreApi.Repository.Supplier;
+using StoreApi.Repositorys.Item;
 using StoreApi.Repositorys.Supplier;
 using StoreApi.Repositorys.User;
 using StoreApi.Repositorys.WareHouse;
@@ -86,6 +87,16 @@ builder.Services.AddScoped<IInvoiceTypeService, InvoiceTypeService>();
 
 builder.Services.AddScoped<IWareHouseRepository, WareHouseRepository>();
 builder.Services.AddScoped<IWareHouseService, WareHouseService>();
+
+builder.Services.AddScoped<IItemRepository, ItemRepository>();
+builder.Services.AddScoped<IItemService, ItemService>();
+
+builder.Services.AddScoped<IPriceHistoryService, PriceHistoryService>();
+builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
+
+builder.Services.AddScoped<IItemImageService, ItemImageService>();
+builder.Services.AddScoped<IItemAttributeService, ItemAttributeService>();
+builder.Services.AddScoped<IItemAttributeDetailService, ItemAttributeDetailService>();
 
 builder.Services.AddSingleton(new AesCrypto("YourSecretKeyHere"));
 

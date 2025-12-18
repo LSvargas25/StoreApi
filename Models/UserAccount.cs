@@ -46,4 +46,6 @@ public partial class UserAccount
     public virtual ICollection<Sale> Sales { get; set; } = new List<Sale>();
 
     public virtual ICollection<Transfer> Transfers { get; set; } = new List<Transfer>();
+
+    public ICollection<PriceHistory> PriceHistories { get; set; }= new List<PriceHistory>();
 }

@@ -4,7 +4,7 @@ using StoreApi.ModelsDTO.Item;
 using System.Data;
 namespace StoreApi.Services.Item
 {
-    public class ItemImageService
+    public class ItemImageService: IItemImageService
     {
         private readonly string _connectionString;
         public ItemImageService(IConfiguration config)
@@ -21,7 +21,10 @@ namespace StoreApi.Services.Item
             using var cmd = new SqlCommand("[Item].[sp_ItemImage_Create]", conn);
             cmd.CommandType = System.Data.CommandType.StoredProcedure;
 
-            cmd.Parameters.AddWithValue("@URL", dto.Url);
+            cmd.Parameters.AddWithValue("@Url", dto.Url);
+            cmd.Parameters.AddWithValue("@ItemID", dto.ItemId);
+            cmd.Parameters.AddWithValue("@IsPrimary", dto.IsPrimary);
+
 
             var output = new SqlParameter("@NewItemImage", System.Data.SqlDbType.Int)
             {

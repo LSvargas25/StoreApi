@@ -29,7 +29,8 @@ public partial class Item
 
     public DateTime CreatedAt { get; set; }
 
-    public DateTime UpdatedAt { get; set; }
+    public DateTime? UpdatedAt { get; set; }
+
 
     public virtual ICollection<AttributeDetail> AttributeDetails { get; set; } = new List<AttributeDetail>();
 

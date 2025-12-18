@@ -41,14 +41,15 @@ namespace StoreApi.Repository.Supplier
 
             return (int)output.Value;
         }
-
         public async Task<List<SupplierSee>> GetAllForViewAsync(string? search)
         {
             var list = new List<SupplierSee>();
 
             using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("Supplier.sp_Supplier_GetAll", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
+            using var cmd = new SqlCommand("Supplier.sp_Supplier_GetAll", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
 
             cmd.Parameters.AddWithValue("@Search", (object?)search ?? DBNull.Value);
 
@@ -62,6 +63,10 @@ namespace StoreApi.Repository.Supplier
                     SupplierId = reader.GetInt32(reader.GetOrdinal("SupplierID")),
                     Name = reader.GetString(reader.GetOrdinal("Name")),
 
+                    Email = reader.IsDBNull(reader.GetOrdinal("Email"))
+                        ? null
+                        : reader.GetString(reader.GetOrdinal("Email")),
+
                     PhoneNumber = reader.IsDBNull(reader.GetOrdinal("PhoneNumber"))
                         ? null
                         : reader.GetString(reader.GetOrdinal("PhoneNumber")),
@@ -74,9 +79,9 @@ namespace StoreApi.Repository.Supplier
                 });
             }
 
-
             return list;
         }
+
 
 
         public async Task<SupplierDTO?> GetByIdAsync(int id)
