@@ -21,17 +21,7 @@ namespace StoreApi.Services.Item
             return await _repository.CreateAsync(dto);
         }
 
-        public Task<bool> UpdatePriceHistoryAsync(int id, PriceHistoryUpdateDTO dto)
-            => _repository.UpdateAsync(id, dto);
-
-        public Task<bool> DeletePriceHistoryAsync(int id)
-            => _repository.DeleteAsync(id);
-
-        public Task<decimal?> GetCurrentSalePriceAsync(int itemVariantId)
-            => _repository.GetCurrentSalePriceAsync(itemVariantId);
-
-        public Task<decimal?> GetCurrentCostAsync(int itemVariantId)
-            => _repository.GetCurrentCostAsync(itemVariantId);
+       
 
         public Task<List<PriceHistoryDTO>> GetPriceHistoryByVariantAsync(
             int itemVariantId,
@@ -39,15 +29,7 @@ namespace StoreApi.Services.Item
             DateTime? to)
             => _repository.GetByVariantAsync(itemVariantId, from, to);
 
-        public Task<List<ListPriceHistoryDTO>> ListCurrentPricesAsync(string? search)
-            => _repository.ListCurrentPricesAsync(search);
-
-        public Task<List<ListCostHistoryDTO>> ListCurrentCostsAsync(string? search)
-            => _repository.ListCurrentCostsAsync(search);
-
-        public Task<List<ListCostByUserDTO>> ListCostHistoryByUserAsync(int userId)
-            => _repository.ListCostByUserAsync(userId);
-
+       
         public Task<List<ListPriceByUserDTO>> ListPriceHistoryByUserAsync(int userId)
             => _repository.ListPriceByUserAsync(userId);
 

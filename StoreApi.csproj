@@ -31,7 +31,6 @@
     <Folder Include="Interface\Exchange\" />
     <Folder Include="Interface\Hook\" />
     <Folder Include="Interface\Inventory\" />
-    <Folder Include="Interface\ItemVariant\" />
     <Folder Include="Interface\Log\" />
     <Folder Include="Interface\OutboxMessage\" />
     <Folder Include="Interface\Payment\" />
@@ -47,7 +46,6 @@
     <Folder Include="Repositorys\Hook\" />
     <Folder Include="Repositorys\Inventory\" />
     <Folder Include="Repositorys\Invoice\" />
-    <Folder Include="Repositorys\ItemVariant\" />
     <Folder Include="Repositorys\Log\" />
     <Folder Include="Repositorys\OutboxMessage\" />
     <Folder Include="Repositorys\Payment\" />
@@ -56,7 +54,6 @@
     <Folder Include="Repositorys\Tax\" />
     <Folder Include="Repositorys\Transfer\" />
     <Folder Include="Services\Log\" />
-    <Folder Include="Services\ItemVariant\" />
     <Folder Include="Services\Inventory\" />
     <Folder Include="Services\Hook\" />
     <Folder Include="Services\Exchange\" />

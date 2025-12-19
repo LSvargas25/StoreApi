@@ -41,72 +41,7 @@ namespace StoreApi.Repositorys.Item
 
             return (int)output.Value;
         }
-
-        // ======================================================
-        // UPDATE
-        // ======================================================
-        public async Task<bool> UpdateAsync(int priceHistoryId, PriceHistoryUpdateDTO dto)
-        {
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("[Item].[sp_PriceHistory_Update]", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            cmd.Parameters.Add("@PriceHistoryId", SqlDbType.Int).Value = priceHistoryId;
-            cmd.Parameters.Add("@Description", SqlDbType.NVarChar).Value =
-                (object?)dto.Description ?? DBNull.Value;
-            cmd.Parameters.Add("@Cost", SqlDbType.Decimal).Value = dto.Cost;
-            cmd.Parameters.Add("@SalePrice", SqlDbType.Decimal).Value = dto.SalePrice;
-
-            await conn.OpenAsync();
-            return await cmd.ExecuteNonQueryAsync() > 0;
-        }
-
-        // ======================================================
-        // DELETE
-        // ======================================================
-        public async Task<bool> DeleteAsync(int priceHistoryId)
-        {
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("[Item].[sp_PriceHistory_Delete]", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            cmd.Parameters.Add("@PriceHistoryId", SqlDbType.Int).Value = priceHistoryId;
-
-            await conn.OpenAsync();
-            return await cmd.ExecuteNonQueryAsync() > 0;
-        }
-
-        // ======================================================
-        // CURRENT VALUES
-        // ======================================================
-        public async Task<decimal?> GetCurrentSalePriceAsync(int itemVariantId)
-        {
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("[Item].[sp_PriceHistory_GetCurrentPrice]", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            cmd.Parameters.Add("@ItemVariantId", SqlDbType.Int).Value = itemVariantId;
-
-            await conn.OpenAsync();
-            var result = await cmd.ExecuteScalarAsync();
-
-            return result == DBNull.Value ? null : (decimal?)result;
-        }
-
-        public async Task<decimal?> GetCurrentCostAsync(int itemVariantId)
-        {
-            using var conn = new SqlConnection(_connectionString);
-            using var cmd = new SqlCommand("[Item].[sp_PriceHistory_GetCurrentCost]", conn);
-            cmd.CommandType = CommandType.StoredProcedure;
-
-            cmd.Parameters.Add("@ItemVariantId", SqlDbType.Int).Value = itemVariantId;
-
-            await conn.OpenAsync();
-            var result = await cmd.ExecuteScalarAsync();
-
-            return result == DBNull.Value ? null : (decimal?)result;
-        }
-
+ 
         // ======================================================
         // HISTORY
         // ======================================================
@@ -153,17 +88,8 @@ namespace StoreApi.Repositorys.Item
         // ======================================================
         // DASHBOARD / AUDIT / ADMIN
         // ======================================================
-        public Task<List<ListPriceHistoryDTO>> ListCurrentPricesAsync(string? search)
-            => ExecuteListAsync<ListPriceHistoryDTO>(
-                "[Item].[sp_PriceHistory_ListCurrentPrices]", search);
+  
 
-        public Task<List<ListCostHistoryDTO>> ListCurrentCostsAsync(string? search)
-            => ExecuteListAsync<ListCostHistoryDTO>(
-                "[Item].[sp_PriceHistory_ListCurrentCosts]", search);
-
-        public Task<List<ListCostByUserDTO>> ListCostByUserAsync(int userAccountId)
-            => ExecuteListAsync<ListCostByUserDTO>(
-                "[Item].[sp_PriceHistory_CostByUser]", userAccountId);
 
         public Task<List<ListPriceByUserDTO>> ListPriceByUserAsync(int userAccountId)
             => ExecuteListAsync<ListPriceByUserDTO>(

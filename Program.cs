@@ -7,15 +7,19 @@ using StoreApi.Interface.Audit;
 using StoreApi.Interface.Customer;
 using StoreApi.Interface.Invoice;
 using StoreApi.Interface.Item;
+using StoreApi.Interface.ItemVariant;
 using StoreApi.Interface.Purchase;
 using StoreApi.Interface.Supplier;
 using StoreApi.Interface.Tax;
+using StoreApi.Interface.Unit;
 using StoreApi.Interface.User;
 using StoreApi.Interface.WareHouse;
 using StoreApi.Models;
 using StoreApi.Repository.Supplier;
 using StoreApi.Repositorys.Item;
+using StoreApi.Repositorys.ItemVariant;
 using StoreApi.Repositorys.Supplier;
+using StoreApi.Repositorys.Unit;
 using StoreApi.Repositorys.User;
 using StoreApi.Repositorys.WareHouse;
 using StoreApi.Services.Audit;
@@ -23,9 +27,11 @@ using StoreApi.Services.Auth;
 using StoreApi.Services.Customer;
 using StoreApi.Services.Invoice;
 using StoreApi.Services.Item;
+using StoreApi.Services.ItemVariant;
 using StoreApi.Services.Purchase;
 using StoreApi.Services.Supplier;
 using StoreApi.Services.Tax;
+using StoreApi.Services.Unit;
 using StoreApi.Services.User;
 using StoreApi.Services.WareHouse;
 using StoreApi.Tools;
@@ -90,6 +96,9 @@ builder.Services.AddScoped<IWareHouseService, WareHouseService>();
 
 builder.Services.AddScoped<IItemRepository, ItemRepository>();
 builder.Services.AddScoped<IItemService, ItemService>();
+builder.Services.AddScoped<IItemVariantService, ItemVariantService>();
+builder.Services.AddScoped<IItemVariantRepository, ItemVariantRepository>();
+
 
 builder.Services.AddScoped<IPriceHistoryService, PriceHistoryService>();
 builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
@@ -97,6 +106,11 @@ builder.Services.AddScoped<IPriceHistoryRepository, PriceHistoryRepository>();
 builder.Services.AddScoped<IItemImageService, ItemImageService>();
 builder.Services.AddScoped<IItemAttributeService, ItemAttributeService>();
 builder.Services.AddScoped<IItemAttributeDetailService, ItemAttributeDetailService>();
+
+builder.Services.AddScoped<IUnitService , UnitService>();
+builder.Services.AddScoped<IUnitConversionService, UnitConversionService>();
+builder.Services.AddScoped<IUnitConversionRepository, UnitConversionRepository>();
+
 
 builder.Services.AddSingleton(new AesCrypto("YourSecretKeyHere"));
 
