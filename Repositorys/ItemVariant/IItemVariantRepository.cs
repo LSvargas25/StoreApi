@@ -4,6 +4,7 @@ namespace StoreApi.Repositorys.ItemVariant
 {
     public interface IItemVariantRepository
     {
+        Task<ItemStatsDTO> GetItemStatsAsync();
         Task<int> CreateAsync(ItemVariantCreateDTO dto);
         Task<ItemVariantDTO?> GetByIdAsync(int itemVariantId);
 

@@ -12,6 +12,8 @@
     {
         public int AttributeId { get; set; }
         public string Value { get; set; } = null!;
+
+        public bool IsFavorite { get; set; }
     }
 
     public class ChangeFavoriteStatusDTO
@@ -27,4 +29,6 @@
         public string Value { get; set; } = null!;
         public bool IsFavorite { get; set; }
     }
+
+    
 }

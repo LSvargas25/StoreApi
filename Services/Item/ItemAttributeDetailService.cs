@@ -57,6 +57,7 @@ namespace StoreApi.Services.Item
             cmd.Parameters.AddWithValue("@ItemId", itemId);
             cmd.Parameters.AddWithValue("@AttributeId", attributeDetail.AttributeId);
             cmd.Parameters.AddWithValue("@Value", attributeDetail.Value);
+            cmd.Parameters.AddWithValue("@IsFavorite", attributeDetail.IsFavorite);
 
             var output = new SqlParameter("@NewAttributeDetailID", SqlDbType.Int)
             {

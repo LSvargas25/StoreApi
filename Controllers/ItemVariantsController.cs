@@ -216,5 +216,31 @@ namespace StoreApi.Controllers
             if (!success) return NotFound(ApiResponse<object>.Fail(message));
             return Ok(ApiResponse<List<ItemCostHistoryDTO>>.Ok(message, data!));
         }
+
+        [HttpGet("stats")]
+        [SwaggerOperation(
+    Summary = "Get product statistics.",
+    Description = "Returns total, active, and inactive product counts."
+)]
+        [ProducesResponseType(typeof(ItemStatsDTO), StatusCodes.Status200OK)]
+        public async Task<IActionResult> GetStats()
+        {
+            var result = await _service.GetItemStatsAsync();
+
+            if (!result.Success)
+                return StatusCode(StatusCodes.Status500InternalServerError, new
+                {
+                    success = false,
+                    message = result.Message
+                });
+
+            return Ok(new
+            {
+                success = true,
+                message = result.Message,
+                data = result.Data
+            });
+        }
+
     }
 }

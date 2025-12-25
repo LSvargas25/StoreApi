@@ -263,5 +263,29 @@ namespace StoreApi.Repositorys.ItemVariant
 
             return list;
         }
+
+        public async Task<ItemStatsDTO> GetItemStatsAsync()
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("[ItemVariant].[sp_ItemVariant_GetStats]", conn);
+
+            cmd.CommandType = CommandType.StoredProcedure;
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+                return new ItemStatsDTO();
+
+            return new ItemStatsDTO
+            {
+                TotalProducts = reader.GetInt32(reader.GetOrdinal("TotalProducts")),
+                ActiveProducts = reader.GetInt32(reader.GetOrdinal("ActiveProducts")),
+                InactiveProducts = reader.GetInt32(reader.GetOrdinal("InactiveProducts"))
+            };
+        }
+
+
+
     }
 }

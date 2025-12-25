@@ -7,8 +7,7 @@ using Swashbuckle.AspNetCore.Annotations;
 namespace StoreApi.Controllers
 {
     [Route("api/[controller]")]
-    [ApiController]
-    [Tags("Item")]
+    [ApiController] 
     public class ItemCategoriesController : ControllerBase
     {
         private readonly  IItemCategoryService _itemCategoryService;

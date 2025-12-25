@@ -7,7 +7,6 @@ namespace StoreApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [Tags("Item")]
     public class ItemImagesController : ControllerBase
     {
         private readonly IItemImageService _itemImageService;
@@ -16,40 +15,127 @@ namespace StoreApi.Controllers
         {
             _itemImageService = itemImageService;
         }
-        
-        //Create a new image for item 
+
+        // ======================================================
+        // UPLOAD IMAGE FILE (NO DB)
+        // ======================================================
+        [HttpPost("upload")]
+        [Consumes("multipart/form-data")]
+        [SwaggerOperation(Summary = "Upload image file and return its URL")]
+        public async Task<IActionResult> Upload([FromForm] ItemImageUploadDTO dto)
+        {
+            if (dto.File == null || dto.File.Length == 0)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "No file uploaded"
+                });
+            }
+
+            var rootPath = Path.Combine(
+                Directory.GetCurrentDirectory(),
+                "wwwroot",
+                "items"
+            );
+
+            Directory.CreateDirectory(rootPath);
+
+            var fileName = $"{Guid.NewGuid()}{Path.GetExtension(dto.File.FileName)}";
+            var fullPath = Path.Combine(rootPath, fileName);
+
+            using (var stream = new FileStream(fullPath, FileMode.Create))
+            {
+                await dto.File.CopyToAsync(stream);
+            }
+
+            var url = $"/items/{fileName}";
+
+            return Ok(new
+            {
+                success = true,
+                url
+            });
+        }
+
+
+        // ======================================================
+        // CREATE IMAGE RECORD (DB)
+        // ======================================================
         [HttpPost]
-        [SwaggerOperation(Summary = "Create a new image for the item .")]
+        [SwaggerOperation(Summary = "Create a new image for the item")]
         public async Task<IActionResult> Create([FromBody] ItemImageDTO dto)
         {
             var id = await _itemImageService.CreateAsync(dto);
+
+            if (id <= 0)
+            {
+                return BadRequest(new
+                {
+                    success = false,
+                    message = "Image not created"
+                });
+            }
+
             dto.ItemId = id;
-            return Ok(dto);
+
+            return Ok(new
+            {
+                success = true,
+                data = dto
+            });
         }
-        //Delete Image
+
+        // ======================================================
+        // DELETE IMAGE (DB)
+        // ======================================================
         [HttpDelete("{id}")]
-        [SwaggerOperation(Summary = "Delete a Image.")]
+        [SwaggerOperation(Summary = "Delete an image")]
         public async Task<IActionResult> Delete(int id)
         {
             var deleted = await _itemImageService.DeleteAsync(id);
-            if (!deleted) return NotFound(new { message = "Image is deleted or  not found" });
 
-            return Ok(new { message = "Image deleted successfully", id });
+            if (!deleted)
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Image is deleted or not found"
+                });
+            }
+
+            return Ok(new
+            {
+                success = true,
+                message = "Image deleted successfully",
+                id
+            });
         }
-        // PUT: api/ItemImages/SetPrimary/10
+
+        // ======================================================
+        // SET PRIMARY IMAGE
+        // ======================================================
         [HttpPut("SetPrimary/{imageId}")]
-        [SwaggerOperation(Summary = "Set an image as the primary image of its item.")]
+        [SwaggerOperation(Summary = "Set an image as the primary image of its item")]
         public async Task<IActionResult> SetPrimary(int imageId)
         {
             var updated = await _itemImageService.SetAsPrimaryAsync(imageId);
 
             if (!updated)
-                return NotFound(new { message = "Image not found." });
+            {
+                return NotFound(new
+                {
+                    success = false,
+                    message = "Image not found"
+                });
+            }
 
-            return Ok(new { message = "Image set as primary successfully.", imageId });
+            return Ok(new
+            {
+                success = true,
+                message = "Image set as primary successfully",
+                imageId
+            });
         }
-
-
-
     }
 }

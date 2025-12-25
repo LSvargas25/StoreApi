@@ -111,6 +111,10 @@ builder.Services.AddScoped<IUnitService , UnitService>();
 builder.Services.AddScoped<IUnitConversionService, UnitConversionService>();
 builder.Services.AddScoped<IUnitConversionRepository, UnitConversionRepository>();
 
+builder.Services.AddScoped<IItemVersionService, ItemVersionService>();
+builder.Services.AddScoped<IItemVersionRepository, ItemVersionRepository>();
+builder.Services.AddScoped<IItemCreationService, ItemCreationService>();
+
 
 builder.Services.AddSingleton(new AesCrypto("YourSecretKeyHere"));
 

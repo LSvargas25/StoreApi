@@ -19,6 +19,9 @@ namespace StoreApi.Interface.ItemVariant
         Task<(bool Success, string Message)> ChangeStatusAsync(int itemVariantId, bool isActive);
 
         Task<List<ListItemVariantByItemIdDTO>> GetByItemIdAsync(int itemId);
+        Task<(bool Success, string Message, ItemStatsDTO? Data)> GetItemStatsAsync();
+
+
 
         // NUEVO
         Task<(bool Success, string Message)> UpdatePriceAsync(int itemVariantId, UpdateVariantPriceDTO dto);

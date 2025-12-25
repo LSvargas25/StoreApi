@@ -245,4 +245,14 @@ namespace StoreApi.ModelsDTO.ItemVariant
 
         public int ChangedByUserId { get; set; }
     }
+
+    //Item stats DTO
+    public class ItemStatsDTO
+    {
+        public int TotalProducts { get; set; }
+        public int ActiveProducts { get; set; }
+        public int InactiveProducts { get; set; }
+    }
+
+
 }

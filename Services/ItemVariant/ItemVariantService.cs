@@ -229,5 +229,46 @@ namespace StoreApi.Services.ItemVariant
             var data = await _repo.GetCostHistoryAsync(itemVariantId);
             return (true, "Cost history retrieved successfully.", data);
         }
+
+        public async Task<(bool Success, string Message, ItemStatsDTO? Data)> GetItemStatsAsync()
+        {
+            try
+            {
+                var stats = await _repo.GetItemStatsAsync();
+
+                // Validación defensiva (por si el SP no devuelve filas)
+                if (stats == null)
+                {
+                    return (
+                        false,
+                        "Product statistics could not be retrieved.",
+                        null
+                    );
+                }
+
+                return (
+                    true,
+                    "Product statistics retrieved successfully.",
+                    stats
+                );
+            }
+            catch (SqlException)
+            {
+                return (
+                    false,
+                    "An error occurred while retrieving product statistics.",
+                    null
+                );
+            }
+            catch (Exception)
+            {
+                return (
+                    false,
+                    "Unexpected error while retrieving product statistics.",
+                    null
+                );
+            }
+        }
+
     }
 }

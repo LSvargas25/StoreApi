@@ -18,7 +18,13 @@
     public class ItemVersionCreateDTO
     {
         public int ItemId { get; set; }
+
+        public int VersionNumber { get; set; }
+
         public string DataSnapshot { get; set; } = null!;
+
+        public DateTime CreatedAt { get; set; }
+
         public int? CreatedByUserId { get; set; }
     }
 }
