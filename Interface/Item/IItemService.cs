@@ -1,4 +1,5 @@
 ﻿using StoreApi.ModelsDTO.Item;
+using static StoreApi.ModelsDTO.Item.ItemFullCreateDTO;
 
 namespace StoreApi.Interface.Item
 {
@@ -6,6 +7,7 @@ namespace StoreApi.Interface.Item
     {
         //create Item 
         Task<ItemDTO> CreateAsync(ItemCreateDTO dto);
+        Task<ItemFullResponseDTO> GetFullItemByIdAsync(int itemId);
         //update Item
         Task<bool> UpdateAsync(int itemId, ItemUpdateDTO dto);
         //change status Item

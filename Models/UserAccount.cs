@@ -23,6 +23,9 @@ public partial class UserAccount
 
     public int RoleId { get; set; }
 
+
+    public string url { get; set; }
+
     public DateTime? CreatedAt { get; set; }
 
     public DateTime? UpdatedAt { get; set; }

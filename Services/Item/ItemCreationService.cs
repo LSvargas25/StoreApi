@@ -19,29 +19,25 @@ namespace StoreApi.Services.Item
             _attributeDetailService = attributeDetailService;
         }
 
-        public async Task<int> CreateFullItemAsync(ItemFullCreateDTO dto)
+       
+
+        public async Task<ItemFullResponseDTO> CreateFullItemAsync(ItemFullCreateDTO dto)
         {
-            // 1️⃣ Crear ITEM (incluye auditoría)
             var item = await _itemService.CreateAsync(new ItemCreateDTO
             {
                 Name = dto.Name,
                 Description = dto.Description,
                 Barcode = dto.Barcode,
                 Brand = dto.Brand,
-
                 Weight = dto.Weight,
                 Height = dto.Height,
                 Width = dto.Width,
                 Length = dto.Length,
-
                 ItemCategoryId = dto.ItemCategoryId
-
-
             });
 
             var itemId = item.ItemId;
 
-            // 2️⃣ Crear IMÁGENES
             foreach (var img in dto.Images)
             {
                 await _itemImageService.CreateAsync(new ItemImageDTO
@@ -52,16 +48,14 @@ namespace StoreApi.Services.Item
                 });
             }
 
-            // 3️⃣ Crear ATRIBUTOS
             foreach (var attr in dto.Attributes)
             {
-                await _attributeDetailService.CreateAttributeDetailAsync(
-                    itemId,
-                    attr
-                );
+                await _attributeDetailService.CreateAttributeDetailAsync(itemId, attr);
             }
 
-            return itemId;
+            // 🔴 AQUÍ USAMOS EL SP Item_List
+            return await _itemService.GetFullItemByIdAsync(itemId);
         }
+
     }
 }

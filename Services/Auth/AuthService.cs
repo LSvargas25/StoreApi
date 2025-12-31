@@ -9,6 +9,7 @@ using StoreApi.Tools;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+
 namespace StoreApi.Services.Auth
 {
     public class AuthService : IAuthService
@@ -17,13 +18,21 @@ namespace StoreApi.Services.Auth
         private readonly ICustomPasswordService _passwordService;
         private readonly IConfiguration _configuration;
         private readonly IAuditService _audit;
+        private readonly IUserRoleService _roleService; // ✅ NUEVO
 
-        public AuthService(IUserRepository userRepo, ICustomPasswordService passwordService, IConfiguration configuration, IAuditService audit)
+        public AuthService(
+            IUserRepository userRepo,
+            ICustomPasswordService passwordService,
+            IConfiguration configuration,
+            IAuditService audit,
+            IUserRoleService roleService // ✅ NUEVO
+        )
         {
             _userRepo = userRepo;
             _passwordService = passwordService;
             _configuration = configuration;
             _audit = audit;
+            _roleService = roleService;
         }
 
         public async Task<UserLoginResponseDTO?> LoginAsync(UserLoginRequestDTO request)
@@ -72,7 +81,14 @@ namespace StoreApi.Services.Auth
                 return null;
             }
 
-            var jwt = GenerateJwtToken(user);
+            // ✅ OBTENER ROL POR ID
+            var role = await _roleService.GetByIdAsync(user.RoleId);
+            if (role == null || !role.IsActive)
+            {
+                return null;
+            }
+
+            var jwt = GenerateJwtToken(user, role);
 
             await _audit.InsertLogAsync(
                 user.UserId,
@@ -97,7 +113,8 @@ namespace StoreApi.Services.Auth
             };
         }
 
-        private (string Token, DateTime ExpiresAt) GenerateJwtToken(UserAccount user)
+        // ✅ AHORA RECIBE EL ROL
+        private (string Token, DateTime ExpiresAt) GenerateJwtToken(UserAccount user, RoleDTO role)
         {
             var jwtSection = _configuration.GetSection("Jwt");
 
@@ -121,17 +138,17 @@ namespace StoreApi.Services.Auth
             var expires = DateTime.UtcNow.AddMinutes(expiresMinutes);
 
             var claims = new List<Claim>
-    {
-        new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
-        new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
+            {
+                new Claim(JwtRegisteredClaimNames.Sub, user.UserId.ToString()),
+                new Claim(JwtRegisteredClaimNames.UniqueName, user.UserName),
 
-        new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
-        new Claim(ClaimTypes.Name, user.UserName),
-        new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
+                new Claim(ClaimTypes.NameIdentifier, user.UserId.ToString()),
+                new Claim(ClaimTypes.Name, user.UserName),
+                new Claim(ClaimTypes.Email, user.Email ?? string.Empty),
 
-        // Por ahora RoleId (luego lo puedes mapear a nombre)
-        new Claim(ClaimTypes.Role, user.RoleId.ToString())
-    };
+                // ✅ CLAVE: NOMBRE DEL ROL
+                new Claim(ClaimTypes.Role, role.Name)
+            };
 
             var token = new JwtSecurityToken(
                 issuer: issuer,
@@ -142,10 +159,7 @@ namespace StoreApi.Services.Auth
             );
 
             var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
-
             return (tokenString, expires);
         }
-
-
     }
 }

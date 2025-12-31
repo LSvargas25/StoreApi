@@ -18,5 +18,8 @@ namespace StoreApi.Repositorys.Item
         Task<List<ListItemWithAttribute>> GetAllWithAttributesAsync(string? search);
 
         Task<bool> DeleteAsync(int itemId);
+
+        Task<ItemFullResponseDTO?> GetFullByIdAsync(int itemId);
+
     }
 }

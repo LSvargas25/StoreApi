@@ -2,6 +2,7 @@
 using Microsoft.AspNetCore.Mvc;
 using StoreApi.Interface.WareHouse;
 using StoreApi.ModelsDTO.WareHouse;
+using System.Security.Claims;
 
 namespace StoreApi.Controllers
 {
@@ -56,14 +57,23 @@ namespace StoreApi.Controllers
             return NoContent();
         }
 
-        // HARD DELETE (Admin only)
-        [Authorize(Roles = "Admin")]
-        [HttpDelete("{id:int}")]
-        public async Task<IActionResult> HardDelete(int id)
-        {
-            var ok = await _service.HardDeleteAsync(id);
-            if (!ok) return NotFound();
-            return NoContent();
-        }
+            [Authorize(Roles = "Admin")]
+            [HttpDelete("{id:int}")]
+            public async Task<IActionResult> HardDelete(int id)
+            {
+                var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+                if (userIdClaim == null)
+                    return Unauthorized(new { message = "Usuario no autenticado." });
+
+                int userId = int.Parse(userIdClaim);
+
+                var result = await _service.HardDeleteAsync(id, userId);
+
+                if (!result.Success)
+                    return BadRequest(new { message = result.Message });
+
+                return Ok(new { message = result.Message });
+            }
+        
     }
 }

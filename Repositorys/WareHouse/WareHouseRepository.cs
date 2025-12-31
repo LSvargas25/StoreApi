@@ -117,21 +117,7 @@ namespace StoreApi.Repositorys.WareHouse
             return MapWarehouse(reader);
         }
 
-        public async Task<bool> HardDeleteAsync(int id)
-        {
-            await using var conn = (SqlConnection)_context.Database.GetDbConnection();
-            if (conn.State != ConnectionState.Open) await conn.OpenAsync();
-
-            await using var cmd = new SqlCommand("WareHouse.sp_WareHouse_HardDelete", conn)
-            {
-                CommandType = CommandType.StoredProcedure
-            };
-
-            cmd.Parameters.AddWithValue("@WarehouseId", id);
-
-            var rows = await cmd.ExecuteNonQueryAsync();
-            return rows > 0;
-        }
+      
 
         private static WareHouseDTO MapWarehouse(SqlDataReader reader)
         {
@@ -146,5 +132,47 @@ namespace StoreApi.Repositorys.WareHouse
                 CreatedAt = DateOnly.FromDateTime(reader.GetDateTime(reader.GetOrdinal("CreatedAt")))
             };
         }
+
+        public async Task<HardDeleteResultDTO> HardDeleteAsync(int warehouseId, int userId)
+        {
+            await using var conn = (SqlConnection)_context.Database.GetDbConnection();
+            if (conn.State != ConnectionState.Open) await conn.OpenAsync();
+
+            await using var cmd = new SqlCommand("WareHouse.sp_WareHouse_HardDelete", conn)
+            {
+                CommandType = CommandType.StoredProcedure
+            };
+
+            cmd.Parameters.AddWithValue("@WarehouseId", warehouseId);
+            cmd.Parameters.AddWithValue("@UserId", userId);
+
+            try
+            {
+                await cmd.ExecuteNonQueryAsync();
+
+                return new HardDeleteResultDTO
+                {
+                    Success = true,
+                    Message = "La sucursal fue eliminada correctamente."
+                };
+            }
+            catch (SqlException ex) when (ex.Number == 50001)
+            {
+                return new HardDeleteResultDTO
+                {
+                    Success = false,
+                    Message = "La sucursal no existe."
+                };
+            }
+            catch (SqlException ex) when (ex.Number == 50002)
+            {
+                return new HardDeleteResultDTO
+                {
+                    Success = false,
+                    Message = "No se puede eliminar la sucursal porque tiene dependencias activas."
+                };
+            }
+        }
     }
-}
+    }
+

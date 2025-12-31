@@ -9,6 +9,6 @@ namespace StoreApi.Interface.WareHouse
         Task<List<WareHouseDTO>> GetAllAsync(string? search);
         Task<WareHouseDTO?> GetByIdAsync(int id);
         Task<bool> ChangeStatusAsync(int id, bool isActive);
-        Task<bool> HardDeleteAsync(int id);
+        Task<HardDeleteResultDTO> HardDeleteAsync(int warehouseId, int userId);
     }
 }

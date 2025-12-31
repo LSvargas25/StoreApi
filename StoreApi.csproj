@@ -36,7 +36,6 @@
     <Folder Include="Interface\Payment\" />
     <Folder Include="Interface\Sale\" />
     <Folder Include="Interface\Transfer\" />
-    <Folder Include="Models\" />
     <Folder Include="Repositorys\CashRegister\" />
     <Folder Include="Repositorys\Credit\" />
     <Folder Include="Repositorys\Currency\" />

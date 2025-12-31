@@ -42,4 +42,12 @@
         public int WarehouseId { get; set; }
         public bool IsActive { get; set; }
     }
+
+    public class HardDeleteResultDTO
+    {
+        public bool Success { get; set; }
+        public string Message { get; set; } = string.Empty;
+    }
+
+
 }

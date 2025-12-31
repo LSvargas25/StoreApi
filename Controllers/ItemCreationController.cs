@@ -28,8 +28,14 @@ namespace StoreApi.Controllers
                 });
             }
 
-            var itemId = await _service.CreateFullItemAsync(dto);
-            return Ok(new { success = true, itemId });
+            var item = await _service.CreateFullItemAsync(dto);
+
+            return Ok(new
+            {
+                success = true,
+                data = item
+            });
         }
+
     }
 }

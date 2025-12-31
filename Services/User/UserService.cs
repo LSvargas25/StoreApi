@@ -102,6 +102,7 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("@RoleID", dto.RoleId);
         cmd.Parameters.AddWithValue("@CreatedAt", DateTime.UtcNow);
         cmd.Parameters.AddWithValue("@UpdatedAt", DBNull.Value);
+        cmd.Parameters.AddWithValue("@Url", dto.url);
 
         var output = new SqlParameter("@NewUserID", SqlDbType.Int)
         {
@@ -219,6 +220,9 @@ public class UserService : IUserService
         cmd.Parameters.AddWithValue("@PhoneNumber",
             dto.PhoneNumber == null ? DBNull.Value : dto.PhoneNumber);
 
+        cmd.Parameters.AddWithValue("@UpdatedAt", DateTime.UtcNow);
+        cmd.Parameters.AddWithValue("@Url", DBNull.Value);
+
         cmd.Parameters.AddWithValue("@CardID",
             dto.CardId == null ? DBNull.Value : EncryptCardId(dto.CardId));
 
@@ -308,4 +312,28 @@ public class UserService : IUserService
 
         return (int)returnParam.Value == 1;
     }
+
+    public async Task<bool> EditPhoto(int id, UserImageDTO dto)
+    {
+        if (string.IsNullOrWhiteSpace(dto.url))
+            throw new ArgumentException("Image URL is required.");
+
+        using var conn = new SqlConnection(_connectionString);
+        using var cmd = new SqlCommand("Users.sp_User_EditPhoto", conn)
+        {
+            CommandType = CommandType.StoredProcedure
+        };
+
+        cmd.Parameters.AddWithValue("@UserID", id);
+        cmd.Parameters.AddWithValue("@Url", dto.url);
+
+        var returnParam = cmd.Parameters.Add("@ReturnVal", SqlDbType.Int);
+        returnParam.Direction = ParameterDirection.ReturnValue;
+
+        await conn.OpenAsync();
+        await cmd.ExecuteNonQueryAsync();
+
+        return (int)returnParam.Value == 1;
+    }
+
 }

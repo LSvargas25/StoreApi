@@ -201,6 +201,61 @@ namespace StoreApi.Repositorys.Item
             return await cmd.ExecuteNonQueryAsync() > 0;
         }
 
-       
+        public async Task<ItemFullResponseDTO?> GetFullByIdAsync(int itemId)
+        {
+            using var conn = new SqlConnection(_connectionString);
+            using var cmd = new SqlCommand("[Item].[Item_List]", conn);
+            cmd.CommandType = CommandType.StoredProcedure;
+            cmd.Parameters.AddWithValue("@ItemId", itemId);
+
+            await conn.OpenAsync();
+            using var reader = await cmd.ExecuteReaderAsync();
+
+            if (!await reader.ReadAsync())
+                return null;
+
+            var item = new ItemFullResponseDTO
+            {
+                ItemId = reader.GetInt32("ItemId"),
+                Name = reader.GetString("Name"),
+                Description = reader["Description"] as string,
+                Barcode = reader["Barcode"] as string,
+                Brand = reader["Brand"] as string,
+                Weight = reader["Weight"] as decimal?,
+                Height = reader["Height"] as decimal?,
+                Width = reader["Width"] as decimal?,
+                Length = reader["Length"] as decimal?,
+                Category = new ItemCategoryDTO
+                {
+                    ItemCategoryId = reader.GetInt32("ItemCategoryId"),
+                    Name = reader.GetString("CategoryName")
+                }
+            };
+
+            // SEGUNDO RESULTSET → IMÁGENES
+            await reader.NextResultAsync();
+            while (await reader.ReadAsync())
+            {
+                item.Images.Add(new ItemImageDTO
+                {
+                    ItemImageId = reader.GetInt32("ItemImageId"),
+                    Url = reader.GetString("Url"),
+                    IsPrimary = reader.GetBoolean("IsPrimary")
+                });
+            }
+
+            // TERCER RESULTSET → ATRIBUTOS
+            await reader.NextResultAsync();
+            while (await reader.ReadAsync())
+            {
+                item.Attributes.Add(new AttributeDetailDTO
+                {
+                    AttributeId = reader.GetInt32("AttributeId"),
+                    Value = reader.GetString("Value")
+                });
+            }
+
+            return item;
+        }
     }
 }

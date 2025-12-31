@@ -21,7 +21,9 @@ namespace StoreApi.ModelsDTO.Item
         // Relaciones
         public List<ItemImageCreateDTO> Images { get; set; } = [];
         public List<AttributeCreateDetailDTO> Attributes { get; set; } = [];
+
+    
+
+
     }
-
-
 }

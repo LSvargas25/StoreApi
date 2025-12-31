@@ -88,5 +88,17 @@ namespace StoreApi.Services.Item
 
         public Task<List<ListItemWithAttribute>> GetAllWithAttributesAsync(string? search)
             => _repo.GetAllWithAttributesAsync(search);
+    
+
+    public async Task<ItemFullResponseDTO> GetFullItemByIdAsync(int itemId)
+        {
+            var item = await _repo.GetFullByIdAsync(itemId);
+            if (item == null)
+                throw new Exception("Item no encontrado");
+
+            return item;
+        }
+
+
     }
 }

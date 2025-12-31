@@ -115,4 +115,16 @@ public class UserAccountsController : ControllerBase
 
         return Ok(new { message = $"User with ID {id} deleted successfully." });
     }
+
+    [HttpPut("{id}/photo")]
+    public async Task<IActionResult> EditPhoto(int id, [FromBody] UserImageDTO dto)
+    {
+        var result = await _userService.EditPhoto(id, dto);
+
+        if (!result)
+            return NotFound(new { message = "User not found." });
+
+        return Ok(new { message = "Photo updated successfully." });
+    }
+
 }

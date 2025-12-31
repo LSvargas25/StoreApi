@@ -18,6 +18,7 @@ namespace StoreApi.Services.WareHouse
         public Task<List<WareHouseDTO>> GetAllAsync(string? search) => _repo.GetAllAsync(search);
         public Task<WareHouseDTO?> GetByIdAsync(int id) => _repo.GetByIdAsync(id);
         public Task<bool> ChangeStatusAsync(int id, bool isActive) => _repo.ChangeStatusAsync(id, isActive);
-        public Task<bool> HardDeleteAsync(int id) => _repo.HardDeleteAsync(id);
+        public Task<HardDeleteResultDTO> HardDeleteAsync(int warehouseId, int userId)
+            => _repo.HardDeleteAsync(warehouseId, userId);
     }
 }

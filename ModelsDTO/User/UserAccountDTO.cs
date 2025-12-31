@@ -8,6 +8,8 @@
         public string? PhoneNumber { get; set; }
         public string? CardId { get; set; }
         public int RoleId { get; set; }
+
+        public string url { get; set; }
     }
 
     public class UserAccountDTO
@@ -58,5 +60,11 @@
         public string Email { get; set; }
         public string Password { get; set; }
     }
+    public class UserImageDTO
+    {
+        public int UserId { get; set; }
+        public string url { get; set; }
+    }
+
 
 }

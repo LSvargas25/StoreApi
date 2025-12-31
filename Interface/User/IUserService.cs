@@ -22,5 +22,8 @@ namespace StoreApi.Interface.User
 
         // Change the Role for the UserID.
         Task<bool> ChangeRole(int id, UserRoleDTO dto);
+
+        Task<bool> EditPhoto(int id, UserImageDTO dto);
+
     }
 }
